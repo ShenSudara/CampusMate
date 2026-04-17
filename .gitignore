@@ -1,0 +1,27 @@
+## User settings
+xcuserdata/
+*.xcworkspace
+
+## Xcode build artifacts
+DerivedData/
+*.xcscmblueprint
+*.xccheckout
+
+## Dependency Managers
+# Swift Package Manager
+.build/
+.swiftpm/
+
+# CocoaPods (Optional: common to ignore the Pods directory)
+Pods/
+
+# Carthage
+Carthage/Build/
+
+## App packaging
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+## OS-specific files
+.DS_Store
