@@ -13,7 +13,6 @@ enum AuthFlow {
     case signUp
     case setupProfile
     case passwordReset
-    case passwordResetConfirmed
 }
 
 // main application flow statuses

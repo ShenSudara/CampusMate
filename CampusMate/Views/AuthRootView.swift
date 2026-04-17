@@ -15,8 +15,6 @@ struct AuthRootView: View {
                 SetupProfileView()
             case .passwordReset:
                 PasswordResetView()
-            case .passwordResetConfirmed:
-                PasswordResetConfirmedView()
             }
         }
     }
