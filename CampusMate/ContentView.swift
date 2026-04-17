@@ -1,24 +1,22 @@
-//
-//  ContentView.swift
-//  CampusMate
-//
-//  Created by Ashen Sudaraka on 2026-04-17.
-//
-
 import SwiftUI
 
+// main flow of application
 struct ContentView: View {
+    @EnvironmentObject private var appState: AppStateViewModel
+    
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        NavigationStack {
+            switch appState.state {
+            case .auth(let authFlow):
+                AuthRootView(flow: authFlow)
+            case .main(let mainFlow):
+                MainRootView(flow: mainFlow)
+            }
         }
-        .padding()
     }
 }
 
 #Preview {
     ContentView()
+        .environmentObject(AppStateViewModel())
 }
