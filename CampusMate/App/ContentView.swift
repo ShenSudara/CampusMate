@@ -17,7 +17,7 @@ struct ContentView: View {
             } else if authViewModel.isSignedIn && !authViewModel.isEmailVerified {
                 VerifyEmailView(viewModel: authViewModel, email: authViewModel.signedInEmail)
             } else if authViewModel.isSignedIn {
-                SignedInView(authViewModel: authViewModel)
+                MainTabView(authViewModel: authViewModel)
             } else {
                 AuthFlowView(viewModel: authViewModel)
             }

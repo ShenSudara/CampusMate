@@ -8,6 +8,7 @@ final class AuthService {
 
     var currentUserId: String? { auth.currentUser?.uid }
     var currentUserEmail: String? { auth.currentUser?.email }
+    var currentDisplayName: String? { auth.currentUser?.displayName }
 
     func addAuthStateListener(_ handler: @escaping (User?) -> Void) -> AuthStateDidChangeListenerHandle {
         auth.addStateDidChangeListener { _, user in handler(user) }
