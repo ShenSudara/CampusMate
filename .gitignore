@@ -71,3 +71,6 @@ fastlane/test_output
 # Other Exclusion
 DerivedData/
 .DS_Store
+# Build output
+build/
+*.xcuserstate
