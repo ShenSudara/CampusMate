@@ -11,11 +11,15 @@ final class SessionViewModel: ObservableObject {
 
     private let userService: UserService
     private let authService: AuthService
+    private let groupService: GroupService
     private var listener: ListenerRegistration?
 
-    init(userService: UserService = .shared, authService: AuthService = .shared) {
+    init(userService: UserService = .shared,
+         authService: AuthService = .shared,
+         groupService: GroupService = .shared) {
         self.userService = userService
         self.authService = authService
+        self.groupService = groupService
     }
 
     var mode: UserMode { user?.activeMode ?? .student }
@@ -41,12 +45,25 @@ final class SessionViewModel: ObservableObject {
                 guard let self else { return }
                 switch result {
                 case .success(let user):
+                    let previous = self.user
                     self.user = user
+                    if previous?.displayName != user.displayName || previous?.email != user.email {
+                        Task { await self.syncGroups(with: user) }
+                    }
                 case .failure(let error):
                     self.errorMessage = AppError.userMessage(for: error)
                 }
                 self.isLoading = false
             }
+        }
+    }
+
+    // Keeps the name other members see in shared groups up to date.
+    private func syncGroups(with user: AppUser) async {
+        do {
+            try await groupService.syncMemberProfile(user)
+        } catch {
+            errorMessage = AppError.userMessage(for: error)
         }
     }
 

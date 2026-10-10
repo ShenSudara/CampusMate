@@ -46,6 +46,25 @@ final class GroupService {
         ])
     }
 
+    // Copies the user's latest name and email into every group they belong to.
+    func syncMemberProfile(_ user: AppUser) async throws {
+        let snapshot = try await groups.whereField("memberIds", arrayContains: user.uid).getDocuments()
+        let batch = Firestore.firestore().batch()
+        var hasChanges = false
+        for document in snapshot.documents {
+            guard let group = try? document.data(as: TrustedGroup.self) else { continue }
+            let current = group.members[user.uid]
+            if current?.displayName == user.displayName && current?.email == user.email { continue }
+            batch.updateData([
+                "members.\(user.uid)": ["email": user.email, "displayName": user.displayName]
+            ], forDocument: document.reference)
+            hasChanges = true
+        }
+        if hasChanges {
+            try await batch.commit()
+        }
+    }
+
     func deleteGroup(_ groupId: String) async throws {
         try await groups.document(groupId).delete()
     }
