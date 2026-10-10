@@ -8,17 +8,18 @@
 import SwiftUI
 
 struct ContentView: View {
-    var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
-        }
-        .padding()
-    }
-}
+    @StateObject private var authViewModel = AuthViewModel()
 
-#Preview {
-    ContentView()
+    var body: some View {
+        Group {
+            if !authViewModel.hasCheckedSession {
+                ProgressView()
+            } else if authViewModel.isSignedIn {
+                SignedInView(authViewModel: authViewModel)
+            } else {
+                AuthFlowView(viewModel: authViewModel)
+            }
+        }
+        .animation(.default, value: authViewModel.isSignedIn)
+    }
 }
