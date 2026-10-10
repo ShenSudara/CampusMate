@@ -28,3 +28,7 @@ struct AuthFlowView: View {
         }
     }
 }
+
+#Preview {
+    AuthFlowView(viewModel: AuthViewModel())
+}

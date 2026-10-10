@@ -82,3 +82,8 @@ struct SignUpView: View {
         .background(Color(.systemBackground).ignoresSafeArea())
     }
 }
+
+#Preview {
+    SignUpView(displayName: .constant(""), email: .constant(""), password: .constant(""), confirmPassword: .constant(""), isLoading: false, errorMessage: nil, onSignUp: {}, onShowSignIn: {})
+}
+    

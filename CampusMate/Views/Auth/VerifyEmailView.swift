@@ -62,3 +62,7 @@ struct VerifyEmailView: View {
         .background(Color(.systemBackground).ignoresSafeArea())
     }
 }
+
+#Preview {
+    VerifyEmailView(viewModel: AuthViewModel(), email: "")
+}
