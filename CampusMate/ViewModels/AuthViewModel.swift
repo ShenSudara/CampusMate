@@ -17,17 +17,21 @@ final class AuthViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published private(set) var userId: String?
     @Published private(set) var hasCheckedSession = false
+    @Published private(set) var isEmailVerified = false
+    @Published var infoMessage: String?
 
     private let authService: AuthService
     private var listenerHandle: AuthStateDidChangeListenerHandle?
 
     var isSignedIn: Bool { userId != nil }
+    var signedInEmail: String { authService.currentUserEmail ?? "" }
 
     init(authService: AuthService = .shared) {
         self.authService = authService
         listenerHandle = authService.addAuthStateListener { [weak self] user in
             Task { @MainActor in
                 self?.userId = user?.uid
+                self?.isEmailVerified = user?.isEmailVerified ?? false
                 self?.hasCheckedSession = true
             }
         }
@@ -66,7 +70,37 @@ final class AuthViewModel: ObservableObject {
         }
     }
 
+    func resendVerificationEmail() async {
+        isLoading = true
+        errorMessage = nil
+        infoMessage = nil
+        defer { isLoading = false }
+        do {
+            try await authService.sendEmailVerification()
+            infoMessage = "Verification email sent to \(authService.currentUserEmail ?? "your inbox"). Check your spam folder too."
+        } catch {
+            errorMessage = AppError.userMessage(for: error)
+        }
+    }
+
+    func checkEmailVerified() async {
+        isLoading = true
+        errorMessage = nil
+        infoMessage = nil
+        defer { isLoading = false }
+        do {
+            isEmailVerified = try await authService.reloadIsEmailVerified()
+            if !isEmailVerified {
+                errorMessage = "Your email is not verified yet. Tap the link in the email, then try again."
+            }
+        } catch {
+            errorMessage = AppError.userMessage(for: error)
+        }
+    }
+
     func signOut() {
+        errorMessage = nil
+        infoMessage = nil
         do {
             try authService.signOut()
             clearForm()

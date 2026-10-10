@@ -14,6 +14,8 @@ struct ContentView: View {
         Group {
             if !authViewModel.hasCheckedSession {
                 ProgressView()
+            } else if authViewModel.isSignedIn && !authViewModel.isEmailVerified {
+                VerifyEmailView(viewModel: authViewModel, email: authViewModel.signedInEmail)
             } else if authViewModel.isSignedIn {
                 SignedInView(authViewModel: authViewModel)
             } else {

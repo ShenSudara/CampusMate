@@ -26,7 +26,20 @@ final class AuthService {
         let request = result.user.createProfileChangeRequest()
         request.displayName = displayName
         try await request.commitChanges()
+        try await result.user.sendEmailVerification()
         return result.user
+    }
+
+    func sendEmailVerification() async throws {
+        guard let user = auth.currentUser else { throw AppError.message("You are not signed in.") }
+        try await user.sendEmailVerification()
+    }
+
+    // Fetches the latest account state so a link clicked in the email is picked up.
+    func reloadIsEmailVerified() async throws -> Bool {
+        guard let user = auth.currentUser else { throw AppError.message("You are not signed in.") }
+        try await user.reload()
+        return auth.currentUser?.isEmailVerified ?? false
     }
 
     func signOut() throws {
