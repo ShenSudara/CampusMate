@@ -3,6 +3,7 @@ import SwiftUI
 struct MainTabView: View {
     @ObservedObject var authViewModel: AuthViewModel
     @StateObject private var session = SessionViewModel()
+    @StateObject private var groupsViewModel = GroupsViewModel()
 
     var body: some View {
         Group {
@@ -26,11 +27,18 @@ struct MainTabView: View {
                 TabView {
                     HomeView(session: session)
                         .tabItem { Label("Home", systemImage: session.mode.systemImage) }
+                    GroupListView(viewModel: groupsViewModel, session: session)
+                        .tabItem { Label("Groups", systemImage: "person.3") }
                     ProfileView(session: session, authViewModel: authViewModel)
                         .tabItem { Label("Profile", systemImage: "person.crop.circle") }
                 }
             }
         }
-        .task { await session.start() }
+        .task {
+            await session.start()
+            if let uid = session.userId {
+                groupsViewModel.start(uid: uid)
+            }
+        }
     }
 }

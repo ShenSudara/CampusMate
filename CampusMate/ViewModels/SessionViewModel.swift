@@ -19,6 +19,7 @@ final class SessionViewModel: ObservableObject {
     }
 
     var mode: UserMode { user?.activeMode ?? .student }
+    var userId: String? { authService.currentUserId }
 
     func start() async {
         guard listener == nil, let uid = authService.currentUserId else { return }
