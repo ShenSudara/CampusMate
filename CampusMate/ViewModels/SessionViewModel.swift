@@ -47,7 +47,9 @@ final class SessionViewModel: ObservableObject {
                 case .success(let user):
                     let previous = self.user
                     self.user = user
-                    if previous?.displayName != user.displayName || previous?.email != user.email {
+                    if previous?.displayName != user.displayName
+                        || previous?.email != user.email
+                        || previous?.activeMode != user.activeMode {
                         Task { await self.syncGroups(with: user) }
                     }
                 case .failure(let error):

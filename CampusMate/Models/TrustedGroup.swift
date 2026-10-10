@@ -4,6 +4,7 @@ import FirebaseFirestore
 struct GroupMember: Codable, Equatable {
     var email: String
     var displayName: String
+    var activeMode: UserMode?
 }
 
 // A group protects one student (its creator and admin); every other member is a guardian.

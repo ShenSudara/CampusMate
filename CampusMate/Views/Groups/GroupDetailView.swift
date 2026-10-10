@@ -110,6 +110,11 @@ struct GroupDetailView: View {
                 Text(member?.email ?? "")
                     .font(.caption)
                     .foregroundColor(.secondary)
+                if let mode = member?.activeMode {
+                    Label("Currently in \(mode.title) mode", systemImage: mode.systemImage)
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                }
             }
             Spacer()
             if let badge {

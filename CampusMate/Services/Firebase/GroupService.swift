@@ -26,7 +26,9 @@ final class GroupService {
             adminId: creator.uid,
             studentId: creator.uid,
             memberIds: [creator.uid],
-            members: [creator.uid: GroupMember(email: creator.email, displayName: creator.displayName)],
+            members: [creator.uid: GroupMember(email: creator.email,
+                                               displayName: creator.displayName,
+                                               activeMode: creator.activeMode)],
             createdAt: Date()
         )
         try groups.document().setData(from: group)
@@ -35,7 +37,7 @@ final class GroupService {
     func addMember(_ user: AppUser, to groupId: String) async throws {
         try await groups.document(groupId).updateData([
             "memberIds": FieldValue.arrayUnion([user.uid]),
-            "members.\(user.uid)": ["email": user.email, "displayName": user.displayName]
+            "members.\(user.uid)": memberData(for: user)
         ])
     }
 
@@ -46,7 +48,7 @@ final class GroupService {
         ])
     }
 
-    // Copies the user's latest name and email into every group they belong to.
+    // Copies the user's latest name, email and mode into every group they belong to.
     func syncMemberProfile(_ user: AppUser) async throws {
         let snapshot = try await groups.whereField("memberIds", arrayContains: user.uid).getDocuments()
         let batch = Firestore.firestore().batch()
@@ -54,15 +56,19 @@ final class GroupService {
         for document in snapshot.documents {
             guard let group = try? document.data(as: TrustedGroup.self) else { continue }
             let current = group.members[user.uid]
-            if current?.displayName == user.displayName && current?.email == user.email { continue }
-            batch.updateData([
-                "members.\(user.uid)": ["email": user.email, "displayName": user.displayName]
-            ], forDocument: document.reference)
+            if current == GroupMember(email: user.email, displayName: user.displayName, activeMode: user.activeMode) {
+                continue
+            }
+            batch.updateData(["members.\(user.uid)": memberData(for: user)], forDocument: document.reference)
             hasChanges = true
         }
         if hasChanges {
             try await batch.commit()
         }
+    }
+
+    private func memberData(for user: AppUser) -> [String: Any] {
+        ["email": user.email, "displayName": user.displayName, "activeMode": user.activeMode.rawValue]
     }
 
     func deleteGroup(_ groupId: String) async throws {
