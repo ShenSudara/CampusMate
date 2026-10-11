@@ -49,3 +49,9 @@ struct AddMemberView: View {
         }
     }
 }
+
+#if DEBUG
+#Preview {
+    AddMemberView(viewModel: .preview(), group: PreviewData.group)
+}
+#endif

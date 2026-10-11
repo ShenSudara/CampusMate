@@ -45,3 +45,9 @@ struct CreateGroupView: View {
         }
     }
 }
+
+#if DEBUG
+#Preview {
+    CreateGroupView(viewModel: .preview(), creator: PreviewData.student)
+}
+#endif

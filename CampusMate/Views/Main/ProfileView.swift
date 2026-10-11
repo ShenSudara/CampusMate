@@ -56,3 +56,9 @@ struct ProfileView: View {
         }
     }
 }
+
+#if DEBUG
+#Preview {
+    ProfileView(session: .preview(), authViewModel: .preview(isSignedIn: true))
+}
+#endif

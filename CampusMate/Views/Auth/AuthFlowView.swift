@@ -29,6 +29,12 @@ struct AuthFlowView: View {
     }
 }
 
-#Preview {
-    AuthFlowView(viewModel: AuthViewModel())
+#if DEBUG
+#Preview("Sign In") {
+    AuthFlowView(viewModel: .preview(screen: .signIn))
 }
+
+#Preview("Sign Up") {
+    AuthFlowView(viewModel: .preview(screen: .signUp))
+}
+#endif

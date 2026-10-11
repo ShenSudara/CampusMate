@@ -75,3 +75,13 @@ struct GroupListView: View {
         }
     }
 }
+
+#if DEBUG
+#Preview("Groups") {
+    GroupListView(viewModel: .preview(), session: .preview())
+}
+
+#Preview("Empty") {
+    GroupListView(viewModel: .preview(groups: []), session: .preview())
+}
+#endif

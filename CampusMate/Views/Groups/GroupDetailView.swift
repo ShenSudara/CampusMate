@@ -125,3 +125,18 @@ struct GroupDetailView: View {
         }
     }
 }
+
+#if DEBUG
+#Preview("Admin") {
+    NavigationStack {
+        GroupDetailView(viewModel: .preview(), groupId: PreviewData.group.id)
+    }
+}
+
+#Preview("Guardian") {
+    NavigationStack {
+        GroupDetailView(viewModel: .preview(currentUserId: PreviewData.guardianId),
+                        groupId: PreviewData.group.id)
+    }
+}
+#endif

@@ -30,3 +30,15 @@ struct AuthTextField: View {
         .cornerRadius(12)
     }
 }
+
+#if DEBUG
+#Preview {
+    VStack(spacing: 12) {
+        AuthTextField(title: "Email", systemImage: "envelope", text: .constant(""),
+                      keyboardType: .emailAddress, contentType: .emailAddress)
+        AuthTextField(title: "Password", systemImage: "lock", text: .constant("secret"),
+                      isSecure: true, contentType: .password)
+    }
+    .padding()
+}
+#endif

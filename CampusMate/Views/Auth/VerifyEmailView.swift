@@ -63,6 +63,8 @@ struct VerifyEmailView: View {
     }
 }
 
+#if DEBUG
 #Preview {
-    VerifyEmailView(viewModel: AuthViewModel(), email: "")
+    VerifyEmailView(viewModel: .preview(isSignedIn: true), email: PreviewData.student.email)
 }
+#endif

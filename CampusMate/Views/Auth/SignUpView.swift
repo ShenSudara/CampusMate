@@ -83,7 +83,16 @@ struct SignUpView: View {
     }
 }
 
-#Preview {
-    SignUpView(displayName: .constant(""), email: .constant(""), password: .constant(""), confirmPassword: .constant(""), isLoading: false, errorMessage: nil, onSignUp: {}, onShowSignIn: {})
+#if DEBUG
+#Preview("Empty") {
+    SignUpView(displayName: .constant(""), email: .constant(""), password: .constant(""),
+               confirmPassword: .constant(""), isLoading: false, errorMessage: nil,
+               onSignUp: {}, onShowSignIn: {})
 }
-    
+
+#Preview("Passwords Differ") {
+    SignUpView(displayName: .constant("Alex Perera"), email: .constant("alex@example.com"),
+               password: .constant("secret1"), confirmPassword: .constant("secret2"),
+               isLoading: false, errorMessage: nil, onSignUp: {}, onShowSignIn: {})
+}
+#endif

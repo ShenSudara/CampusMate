@@ -25,3 +25,10 @@ struct ContentView: View {
         .animation(.default, value: authViewModel.isSignedIn)
     }
 }
+
+#if DEBUG
+#Preview {
+    let _ = PreviewData.configureFirebase()
+    ContentView()
+}
+#endif

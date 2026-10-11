@@ -26,8 +26,9 @@ final class AuthViewModel: ObservableObject {
     var isSignedIn: Bool { userId != nil }
     var signedInEmail: String { authService.currentUserEmail ?? "" }
 
-    init(authService: AuthService = .shared) {
+    init(authService: AuthService = .shared, listensToAuthState: Bool = true) {
         self.authService = authService
+        guard listensToAuthState else { return }
         listenerHandle = authService.addAuthStateListener { [weak self] user in
             Task { @MainActor in
                 self?.userId = user?.uid
@@ -130,3 +131,19 @@ final class AuthViewModel: ObservableObject {
         confirmPassword = ""
     }
 }
+
+#if DEBUG
+extension AuthViewModel {
+    static func preview(screen: Screen = .signIn,
+                        isSignedIn: Bool = false,
+                        errorMessage: String? = nil) -> AuthViewModel {
+        PreviewData.configureFirebase()
+        let viewModel = AuthViewModel(listensToAuthState: false)
+        viewModel.screen = screen
+        viewModel.userId = isSignedIn ? PreviewData.studentId : nil
+        viewModel.hasCheckedSession = true
+        viewModel.errorMessage = errorMessage
+        return viewModel
+    }
+}
+#endif
