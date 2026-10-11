@@ -2,8 +2,8 @@ import SwiftUI
 
 struct StudentHomeView: View {
     @ObservedObject var session: SessionViewModel
-    @StateObject private var viewModel = StudentHomeViewModel()
-    @State private var isPickingDestination = false
+    @ObservedObject var viewModel: StudentHomeViewModel
+    let onOpenDestination: () -> Void
 
     var body: some View {
         ScrollView {
@@ -18,13 +18,11 @@ struct StudentHomeView: View {
                 if let destination = viewModel.destination {
                     DestinationCard(
                         destination: destination,
-                        onChange: { isPickingDestination = true },
+                        onChange: onOpenDestination,
                         onClear: viewModel.clearDestination
                     )
                 } else {
-                    Button {
-                        isPickingDestination = true
-                    } label: {
+                    Button(action: onOpenDestination) {
                         HStack(spacing: 14) {
                             Image(systemName: "magnifyingglass.circle.fill")
                                 .font(.largeTitle)
@@ -50,15 +48,12 @@ struct StudentHomeView: View {
             .padding()
         }
         .background(Color(.systemGroupedBackground).ignoresSafeArea())
-        .sheet(isPresented: $isPickingDestination) {
-            DestinationPickerView(viewModel: viewModel)
-        }
     }
 }
 
 #Preview {
     NavigationStack {
-        StudentHomeView(session: SessionViewModel())
+        StudentHomeView(session: SessionViewModel(), viewModel: StudentHomeViewModel(), onOpenDestination: {})
             .navigationTitle("Student")
     }
 }

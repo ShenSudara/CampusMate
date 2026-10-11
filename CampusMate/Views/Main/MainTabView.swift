@@ -1,9 +1,15 @@
 import SwiftUI
 
 struct MainTabView: View {
+    enum Tab {
+        case home, destination, groups, profile
+    }
+
     @ObservedObject var authViewModel: AuthViewModel
     @StateObject private var session = SessionViewModel()
     @StateObject private var groupsViewModel = GroupsViewModel()
+    @StateObject private var studentHomeViewModel = StudentHomeViewModel()
+    @State private var selectedTab: Tab = .home
 
     var body: some View {
         Group {
@@ -24,13 +30,28 @@ struct MainTabView: View {
                     ProgressView("Loading your profile…")
                 }
             } else {
-                TabView {
-                    HomeView(session: session)
+                TabView(selection: $selectedTab) {
+                    HomeView(session: session,
+                             studentHomeViewModel: studentHomeViewModel,
+                             onOpenDestination: { selectedTab = .destination })
                         .tabItem { Label("Home", systemImage: session.mode.systemImage) }
+                        .tag(Tab.home)
+                    if session.mode == .student {
+                        DestinationMapView(viewModel: studentHomeViewModel)
+                            .tabItem { Label("Destination", systemImage: "map") }
+                            .tag(Tab.destination)
+                    }
                     GroupListView(viewModel: groupsViewModel, session: session)
                         .tabItem { Label("Groups", systemImage: "person.3") }
+                        .tag(Tab.groups)
                     ProfileView(session: session, authViewModel: authViewModel)
                         .tabItem { Label("Profile", systemImage: "person.crop.circle") }
+                        .tag(Tab.profile)
+                }
+                .onChange(of: session.mode) { mode in
+                    if mode == .guardian && selectedTab == .destination {
+                        selectedTab = .home
+                    }
                 }
             }
         }

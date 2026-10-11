@@ -11,6 +11,10 @@ final class StudentHomeViewModel: ObservableObject {
     @Published private(set) var destination: Destination?
     @Published private(set) var isResolving = false
     @Published var errorMessage: String?
+    @Published var mapRegion = MKCoordinateRegion(
+        center: CLLocationCoordinate2D(latitude: 6.9271, longitude: 79.8612),
+        span: MKCoordinateSpan(latitudeDelta: 0.15, longitudeDelta: 0.15)
+    )
 
     private let searchService: PlaceSearchService
 
@@ -34,7 +38,12 @@ final class StudentHomeViewModel: ObservableObject {
         errorMessage = nil
         defer { isResolving = false }
         do {
-            destination = try await searchService.resolve(suggestion)
+            let place = try await searchService.resolve(suggestion)
+            destination = place
+            mapRegion = MKCoordinateRegion(
+                center: place.coordinate,
+                span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
+            )
             searchText = ""
             suggestions = []
             return true
@@ -46,5 +55,7 @@ final class StudentHomeViewModel: ObservableObject {
 
     func clearDestination() {
         destination = nil
+        searchText = ""
+        suggestions = []
     }
 }
