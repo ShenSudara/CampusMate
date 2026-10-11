@@ -5,16 +5,23 @@ struct HomeView: View {
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 16) {
-                Image(systemName: session.mode.systemImage)
-                    .font(.system(size: 56))
-                    .foregroundColor(.accentColor)
-                Text("Hi, \(session.user?.displayName ?? "")")
-                    .font(.title2.bold())
-                Text("You are in \(session.mode.title) mode.")
-                    .foregroundColor(.secondary)
+            Group {
+                switch session.mode {
+                case .student:
+                    StudentHomeView(session: session)
+                case .guardian:
+                    VStack(spacing: 16) {
+                        Image(systemName: session.mode.systemImage)
+                            .font(.system(size: 56))
+                            .foregroundColor(.accentColor)
+                        Text("Hi, \(session.user?.displayName ?? "")")
+                            .font(.title2.bold())
+                        Text("You are in Guardian mode.")
+                            .foregroundColor(.secondary)
+                    }
+                    .padding()
+                }
             }
-            .padding()
             .navigationTitle(session.mode.title)
         }
     }
