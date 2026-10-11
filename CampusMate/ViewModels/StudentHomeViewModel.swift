@@ -11,6 +11,7 @@ final class StudentHomeViewModel: ObservableObject {
     @Published private(set) var destination: Destination?
     @Published private(set) var isResolving = false
     @Published var errorMessage: String?
+    @Published private(set) var userCoordinate: CLLocationCoordinate2D?
     @Published var mapRegion = MKCoordinateRegion(
         center: CLLocationCoordinate2D(latitude: 6.9271, longitude: 79.8612),
         span: MKCoordinateSpan(latitudeDelta: 0.15, longitudeDelta: 0.15)
@@ -54,6 +55,7 @@ final class StudentHomeViewModel: ObservableObject {
     }
 
     private func handleLocation(_ location: CLLocation) {
+        userCoordinate = location.coordinate
         let nearby = MKCoordinateRegion(
             center: location.coordinate,
             span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
@@ -82,6 +84,20 @@ final class StudentHomeViewModel: ObservableObject {
         } catch {
             errorMessage = AppError.userMessage(for: error)
             return false
+        }
+    }
+
+    func centerOnUser() {
+        guard let userCoordinate else { return }
+        mapRegion = MKCoordinateRegion(
+            center: userCoordinate,
+            span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
+        )
+    }
+
+    func showRoute(to destination: Destination) {
+        if let region = MKCoordinateRegion.fitting([destination.coordinate] + [userCoordinate].compactMap { $0 }) {
+            mapRegion = region
         }
     }
 

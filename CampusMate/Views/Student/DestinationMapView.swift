@@ -3,25 +3,43 @@ import MapKit
 
 struct DestinationMapView: View {
     @ObservedObject var viewModel: StudentHomeViewModel
+    @ObservedObject var tripViewModel: TripViewModel
+    @ObservedObject var groupsViewModel: GroupsViewModel
+    @ObservedObject var session: SessionViewModel
     @FocusState private var isSearchFocused: Bool
+    @State private var confirmCancel = false
+
+    private var activeTrip: Trip? { tripViewModel.activeTrip }
+
+    private var mapDestination: Destination? { activeTrip?.destination ?? viewModel.destination }
 
     private var showsSuggestions: Bool {
-        isSearchFocused && !viewModel.searchText.isEmpty
+        activeTrip == nil && isSearchFocused && !viewModel.searchText.isEmpty
     }
 
     var body: some View {
         ZStack(alignment: .top) {
             Map(coordinateRegion: $viewModel.mapRegion,
-                annotationItems: viewModel.destination.map { [$0] } ?? []) { place in
+                showsUserLocation: true,
+                annotationItems: mapDestination.map { [$0] } ?? []) { place in
                 MapMarker(coordinate: place.coordinate, tint: .red)
             }
             .ignoresSafeArea(edges: .top)
             .onTapGesture { isSearchFocused = false }
 
             VStack(spacing: 8) {
-                searchBar
+                if activeTrip == nil {
+                    searchBar
+                } else {
+                    tripBanner
+                }
 
-                if let errorMessage = viewModel.errorMessage {
+                if tripViewModel.isLocationDenied || tripViewModel.needsLocationPermission {
+                    LocationPermissionBanner(isDenied: tripViewModel.isLocationDenied,
+                                             onAllow: tripViewModel.requestLocationPermission)
+                }
+
+                if let errorMessage = viewModel.errorMessage ?? tripViewModel.errorMessage {
                     Text(errorMessage)
                         .font(.footnote)
                         .foregroundColor(.red)
@@ -37,8 +55,26 @@ struct DestinationMapView: View {
 
                 Spacer()
 
-                if let destination = viewModel.destination, !showsSuggestions {
-                    selectedCard(for: destination)
+                HStack {
+                    Spacer()
+                    if viewModel.userCoordinate != nil {
+                        Button(action: viewModel.centerOnUser) {
+                            Image(systemName: "location.fill")
+                                .font(.title3)
+                                .padding(12)
+                                .background(.regularMaterial)
+                                .clipShape(Circle())
+                        }
+                        .accessibilityLabel("Show my location")
+                    }
+                }
+
+                if !showsSuggestions {
+                    if let trip = activeTrip {
+                        activeTripPanel(for: trip)
+                    } else if let destination = viewModel.destination {
+                        selectedPanel(for: destination)
+                    }
                 }
             }
             .padding()
@@ -50,6 +86,19 @@ struct DestinationMapView: View {
                     .cornerRadius(12)
                     .frame(maxHeight: .infinity)
             }
+        }
+        .onChange(of: activeTrip?.id) { _ in
+            if let trip = activeTrip {
+                viewModel.showRoute(to: trip.destination)
+            }
+        }
+        .confirmationDialog("Cancel this journey?", isPresented: $confirmCancel, titleVisibility: .visible) {
+            Button("Cancel Journey", role: .destructive) {
+                Task { await tripViewModel.endTrip() }
+            }
+            Button("Keep Sharing", role: .cancel) {}
+        } message: {
+            Text("Location sharing will stop and your group will see the journey as finished.")
         }
     }
 
@@ -77,6 +126,22 @@ struct DestinationMapView: View {
         .shadow(color: .black.opacity(0.1), radius: 6, y: 2)
     }
 
+    private var tripBanner: some View {
+        HStack {
+            Label("Journey in progress", systemImage: "dot.radiowaves.left.and.right")
+                .font(.subheadline.bold())
+                .foregroundColor(.green)
+            Spacer()
+            if let trip = activeTrip {
+                Text(trip.startedAt, style: .timer)
+                    .font(.subheadline.monospacedDigit())
+            }
+        }
+        .padding(12)
+        .background(.regularMaterial)
+        .cornerRadius(12)
+    }
+
     private var suggestionList: some View {
         ScrollView {
             LazyVStack(alignment: .leading, spacing: 0) {
@@ -88,7 +153,11 @@ struct DestinationMapView: View {
                 ForEach(viewModel.suggestions) { suggestion in
                     Button {
                         isSearchFocused = false
-                        Task { await viewModel.select(suggestion) }
+                        Task {
+                            if await viewModel.select(suggestion), let destination = viewModel.destination {
+                                viewModel.showRoute(to: destination)
+                            }
+                        }
                     } label: {
                         HStack(spacing: 12) {
                             Image(systemName: "mappin.circle.fill")
@@ -118,7 +187,7 @@ struct DestinationMapView: View {
         .cornerRadius(12)
     }
 
-    private func selectedCard(for destination: Destination) -> some View {
+    private func destinationRow(for destination: Destination, removable: Bool) -> some View {
         HStack(alignment: .top, spacing: 12) {
             Image(systemName: "flag.checkered")
                 .font(.title3)
@@ -133,12 +202,68 @@ struct DestinationMapView: View {
                 }
             }
             Spacer()
-            Button(role: .destructive, action: viewModel.clearDestination) {
-                Image(systemName: "xmark.circle.fill")
-                    .font(.title3)
-                    .foregroundColor(.secondary)
+            if removable {
+                Button(action: viewModel.clearDestination) {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.title3)
+                        .foregroundColor(.secondary)
+                }
+                .accessibilityLabel("Remove destination")
             }
-            .accessibilityLabel("Remove destination")
+        }
+    }
+
+    private func selectedPanel(for destination: Destination) -> some View {
+        VStack(spacing: 14) {
+            destinationRow(for: destination, removable: true)
+            Button {
+                Task {
+                    await tripViewModel.startTrip(student: session.user,
+                                                  groups: groupsViewModel.groups,
+                                                  destination: destination)
+                }
+            } label: {
+                ZStack {
+                    if tripViewModel.isWorking {
+                        ProgressView().tint(.white)
+                    } else {
+                        Label("Start Journey", systemImage: "figure.walk.departure")
+                            .font(.headline)
+                    }
+                }
+                .frame(maxWidth: .infinity)
+                .padding()
+            }
+            .background(Color.accentColor)
+            .foregroundColor(.white)
+            .cornerRadius(14)
+            .disabled(tripViewModel.isWorking)
+        }
+        .padding()
+        .background(.regularMaterial)
+        .cornerRadius(16)
+        .shadow(color: .black.opacity(0.1), radius: 6, y: 2)
+    }
+
+    private func activeTripPanel(for trip: Trip) -> some View {
+        VStack(spacing: 14) {
+            destinationRow(for: trip.destination, removable: false)
+            Button(role: .destructive) {
+                confirmCancel = true
+            } label: {
+                ZStack {
+                    if tripViewModel.isWorking {
+                        ProgressView()
+                    } else {
+                        Label("Cancel Journey", systemImage: "xmark.octagon")
+                            .font(.headline)
+                    }
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 6)
+            }
+            .buttonStyle(.bordered)
+            .disabled(tripViewModel.isWorking)
         }
         .padding()
         .background(.regularMaterial)
@@ -148,5 +273,8 @@ struct DestinationMapView: View {
 }
 
 #Preview {
-    DestinationMapView(viewModel: StudentHomeViewModel())
+    DestinationMapView(viewModel: StudentHomeViewModel(),
+                       tripViewModel: TripViewModel(),
+                       groupsViewModel: GroupsViewModel(),
+                       session: SessionViewModel())
 }

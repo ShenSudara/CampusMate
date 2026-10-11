@@ -40,7 +40,10 @@ struct MainTabView: View {
                         .tabItem { Label("Home", systemImage: session.mode.systemImage) }
                         .tag(Tab.home)
                     if session.mode == .student {
-                        DestinationMapView(viewModel: studentHomeViewModel)
+                        DestinationMapView(viewModel: studentHomeViewModel,
+                                           tripViewModel: tripViewModel,
+                                           groupsViewModel: groupsViewModel,
+                                           session: session)
                             .tabItem { Label("Destination", systemImage: "map") }
                             .tag(Tab.destination)
                     }

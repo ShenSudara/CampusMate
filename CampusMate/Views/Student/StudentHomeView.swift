@@ -14,7 +14,7 @@ struct StudentHomeView: View {
                     Text("Hi, \(session.user?.displayName ?? "there")")
                         .font(.title2.bold())
                     Text(tripViewModel.activeTrip == nil
-                         ? "Set where you're heading before you leave."
+                         ? "Pick your destination and start your journey from the Destination tab."
                          : "Your group can follow your journey.")
                         .foregroundColor(.secondary)
                 }
@@ -28,12 +28,13 @@ struct StudentHomeView: View {
                     ProgressView()
                         .frame(maxWidth: .infinity)
                 } else if let trip = tripViewModel.activeTrip {
-                    ActiveTripCard(trip: trip, isWorking: tripViewModel.isWorking) {
+                    ActiveTripCard(trip: trip,
+                                   userCoordinate: viewModel.userCoordinate,
+                                   isWorking: tripViewModel.isWorking) {
                         Task { await tripViewModel.endTrip() }
                     }
                 } else {
                     destinationSection
-                    startButton
                 }
 
                 if let errorMessage = tripViewModel.errorMessage {
@@ -52,6 +53,7 @@ struct StudentHomeView: View {
         if let destination = viewModel.destination {
             DestinationCard(
                 destination: destination,
+                userCoordinate: viewModel.userCoordinate,
                 onChange: onOpenDestination,
                 onClear: viewModel.clearDestination
             )
@@ -80,30 +82,6 @@ struct StudentHomeView: View {
         }
     }
 
-    private var startButton: some View {
-        Button {
-            Task {
-                await tripViewModel.startTrip(student: session.user,
-                                              groups: groupsViewModel.groups,
-                                              destination: viewModel.destination)
-            }
-        } label: {
-            ZStack {
-                if tripViewModel.isWorking {
-                    ProgressView().tint(.white)
-                } else {
-                    Label("Start Journey", systemImage: "figure.walk.departure")
-                        .font(.headline)
-                }
-            }
-            .frame(maxWidth: .infinity)
-            .padding()
-        }
-        .background(viewModel.destination == nil ? Color.gray.opacity(0.4) : Color.accentColor)
-        .foregroundColor(.white)
-        .cornerRadius(14)
-        .disabled(viewModel.destination == nil || tripViewModel.isWorking)
-    }
 }
 
 #Preview {
