@@ -46,8 +46,10 @@ struct CreateGroupView: View {
     }
 }
 
-#if DEBUG
 #Preview {
-    CreateGroupView(viewModel: .preview(), creator: PreviewData.student)
+    CreateGroupView(
+        viewModel: GroupsViewModel(),
+        creator: AppUser(id: "alex", email: "alex@example.com", displayName: "Alex Perera",
+                     activeMode: .student, createdAt: Date())
+    )
 }
-#endif

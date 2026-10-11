@@ -2,16 +2,8 @@ import SwiftUI
 
 struct MainTabView: View {
     @ObservedObject var authViewModel: AuthViewModel
-    @StateObject private var session: SessionViewModel
-    @StateObject private var groupsViewModel: GroupsViewModel
-
-    init(authViewModel: AuthViewModel,
-         session: SessionViewModel? = nil,
-         groupsViewModel: GroupsViewModel? = nil) {
-        self.authViewModel = authViewModel
-        _session = StateObject(wrappedValue: session ?? SessionViewModel())
-        _groupsViewModel = StateObject(wrappedValue: groupsViewModel ?? GroupsViewModel())
-    }
+    @StateObject private var session = SessionViewModel()
+    @StateObject private var groupsViewModel = GroupsViewModel()
 
     var body: some View {
         Group {
@@ -51,10 +43,6 @@ struct MainTabView: View {
     }
 }
 
-#if DEBUG
 #Preview {
-    MainTabView(authViewModel: .preview(isSignedIn: true),
-                session: .preview(),
-                groupsViewModel: .preview())
+    MainTabView(authViewModel: AuthViewModel())
 }
-#endif

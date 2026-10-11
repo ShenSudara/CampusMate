@@ -4,7 +4,7 @@ import FirebaseFirestore
 final class UserService {
     static let shared = UserService()
 
-    private let users = Firestore.firestore().collection("users")
+    private lazy var users = Firestore.firestore().collection("users")
 
     // Creates the profile on first sign-in, so older accounts get one too.
     func ensureProfile(uid: String, email: String, displayName: String) async throws {

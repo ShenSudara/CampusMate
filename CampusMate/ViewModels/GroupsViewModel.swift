@@ -120,17 +120,3 @@ final class GroupsViewModel: ObservableObject {
         }
     }
 }
-
-#if DEBUG
-extension GroupsViewModel {
-    static func preview(groups: [TrustedGroup] = [PreviewData.group, PreviewData.guardedGroup],
-                        currentUserId: String = PreviewData.studentId) -> GroupsViewModel {
-        PreviewData.configureFirebase()
-        let viewModel = GroupsViewModel()
-        viewModel.groups = groups
-        viewModel.uid = currentUserId
-        viewModel.isLoading = false
-        return viewModel
-    }
-}
-#endif

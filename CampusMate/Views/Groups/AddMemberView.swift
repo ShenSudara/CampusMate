@@ -50,8 +50,20 @@ struct AddMemberView: View {
     }
 }
 
-#if DEBUG
 #Preview {
-    AddMemberView(viewModel: .preview(), group: PreviewData.group)
+    AddMemberView(
+        viewModel: GroupsViewModel(),
+        group: TrustedGroup(
+            id: "family",
+            name: "Family",
+            adminId: "alex",
+            studentId: "alex",
+            memberIds: ["alex", "maya"],
+            members: [
+                "alex": GroupMember(email: "alex@example.com", displayName: "Alex Perera", activeMode: .student),
+                "maya": GroupMember(email: "maya@example.com", displayName: "Maya Perera", activeMode: .guardian)
+            ],
+            createdAt: Date()
+        )
+    )
 }
-#endif

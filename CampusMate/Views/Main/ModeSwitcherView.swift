@@ -22,11 +22,7 @@ struct ModeSwitcherView: View {
     }
 }
 
-#if DEBUG
 #Preview {
-    Form {
-        ModeSwitcherView(selection: .student, isSaving: false, onSelect: { _ in })
-        ModeSwitcherView(selection: .guardian, isSaving: true, onSelect: { _ in })
-    }
+    ModeSwitcherView(selection: .student, isSaving: false, onSelect: { _ in })
+        .padding()
 }
-#endif

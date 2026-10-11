@@ -66,19 +66,7 @@ struct SignInView: View {
     }
 }
 
-#if DEBUG
-#Preview("Empty") {
+#Preview {
     SignInView(email: .constant(""), password: .constant(""), isLoading: false,
                errorMessage: nil, onSignIn: {}, onShowSignUp: {})
 }
-
-#Preview("Error") {
-    SignInView(email: .constant("alex@example.com"), password: .constant("secret1"), isLoading: false,
-               errorMessage: "Incorrect email or password.", onSignIn: {}, onShowSignUp: {})
-}
-
-#Preview("Loading") {
-    SignInView(email: .constant("alex@example.com"), password: .constant("secret1"), isLoading: true,
-               errorMessage: nil, onSignIn: {}, onShowSignUp: {})
-}
-#endif

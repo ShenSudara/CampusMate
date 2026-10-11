@@ -106,15 +106,3 @@ final class SessionViewModel: ObservableObject {
         }
     }
 }
-
-#if DEBUG
-extension SessionViewModel {
-    static func preview(user: AppUser? = PreviewData.student) -> SessionViewModel {
-        PreviewData.configureFirebase()
-        let viewModel = SessionViewModel()
-        viewModel.user = user
-        viewModel.isLoading = user == nil
-        return viewModel
-    }
-}
-#endif

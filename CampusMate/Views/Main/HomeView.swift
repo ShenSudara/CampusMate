@@ -20,12 +20,6 @@ struct HomeView: View {
     }
 }
 
-#if DEBUG
-#Preview("Student") {
-    HomeView(session: .preview(user: PreviewData.student))
+#Preview {
+    HomeView(session: SessionViewModel())
 }
-
-#Preview("Guardian") {
-    HomeView(session: .preview(user: PreviewData.guardian))
-}
-#endif

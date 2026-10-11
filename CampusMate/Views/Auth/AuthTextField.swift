@@ -31,14 +31,8 @@ struct AuthTextField: View {
     }
 }
 
-#if DEBUG
 #Preview {
-    VStack(spacing: 12) {
-        AuthTextField(title: "Email", systemImage: "envelope", text: .constant(""),
-                      keyboardType: .emailAddress, contentType: .emailAddress)
-        AuthTextField(title: "Password", systemImage: "lock", text: .constant("secret"),
-                      isSecure: true, contentType: .password)
-    }
-    .padding()
+    AuthTextField(title: "Email", systemImage: "envelope", text: .constant(""),
+                  keyboardType: .emailAddress, contentType: .emailAddress)
+        .padding()
 }
-#endif

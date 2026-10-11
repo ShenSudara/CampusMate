@@ -76,12 +76,6 @@ struct GroupListView: View {
     }
 }
 
-#if DEBUG
-#Preview("Groups") {
-    GroupListView(viewModel: .preview(), session: .preview())
+#Preview {
+    GroupListView(viewModel: GroupsViewModel(), session: SessionViewModel())
 }
-
-#Preview("Empty") {
-    GroupListView(viewModel: .preview(groups: []), session: .preview())
-}
-#endif

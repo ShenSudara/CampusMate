@@ -4,7 +4,7 @@ import FirebaseFirestore
 final class GroupService {
     static let shared = GroupService()
 
-    private let groups = Firestore.firestore().collection("groups")
+    private lazy var groups = Firestore.firestore().collection("groups")
 
     func listenToGroups(for uid: String,
                         onChange: @escaping (Result<[TrustedGroup], Error>) -> Void) -> ListenerRegistration {

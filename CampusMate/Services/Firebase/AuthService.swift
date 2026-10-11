@@ -1,17 +1,22 @@
 import Foundation
 import FirebaseAuth
+import FirebaseCore
 
 final class AuthService {
     static let shared = AuthService()
 
-    private let auth = Auth.auth()
+    private lazy var auth = Auth.auth()
 
-    var currentUserId: String? { auth.currentUser?.uid }
-    var currentUserEmail: String? { auth.currentUser?.email }
-    var currentDisplayName: String? { auth.currentUser?.displayName }
+    // False in SwiftUI previews, where the app delegate does not run.
+    private var isFirebaseReady: Bool { FirebaseApp.app() != nil }
 
-    func addAuthStateListener(_ handler: @escaping (User?) -> Void) -> AuthStateDidChangeListenerHandle {
-        auth.addStateDidChangeListener { _, user in handler(user) }
+    var currentUserId: String? { isFirebaseReady ? auth.currentUser?.uid : nil }
+    var currentUserEmail: String? { isFirebaseReady ? auth.currentUser?.email : nil }
+    var currentDisplayName: String? { isFirebaseReady ? auth.currentUser?.displayName : nil }
+
+    func addAuthStateListener(_ handler: @escaping (User?) -> Void) -> AuthStateDidChangeListenerHandle? {
+        guard isFirebaseReady else { return nil }
+        return auth.addStateDidChangeListener { _, user in handler(user) }
     }
 
     func removeAuthStateListener(_ handle: AuthStateDidChangeListenerHandle) {
