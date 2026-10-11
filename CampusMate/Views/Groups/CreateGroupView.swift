@@ -12,7 +12,7 @@ struct CreateGroupView: View {
                 Section {
                     TextField("Group name (e.g. Family)", text: $name)
                 } footer: {
-                    Text("You will be the admin of this group. Members you add can watch your journeys and receive your alerts.")
+                    Text("You will be the admin of this group. Members in Student mode share their journeys with the group, and members in Guardian mode watch them.")
                 }
                 if let errorMessage = viewModel.errorMessage {
                     Section {

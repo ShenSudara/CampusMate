@@ -22,12 +22,6 @@ final class GroupsViewModel: ObservableObject {
 
     var currentUserId: String { uid ?? "" }
 
-    // Groups where the current user is the protected student.
-    var myGroups: [TrustedGroup] { groups.filter { $0.studentId == uid } }
-
-    // Groups where the current user is a guardian.
-    var guardingGroups: [TrustedGroup] { groups.filter { $0.studentId != uid } }
-
     func group(withId id: String?) -> TrustedGroup? {
         groups.first { $0.id == id }
     }

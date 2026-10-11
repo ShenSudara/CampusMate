@@ -17,21 +17,8 @@ struct GroupListView: View {
                         message: "Create a trusted group and add the people who should watch over your journeys."
                     )
                 } else {
-                    List {
-                        if !viewModel.myGroups.isEmpty {
-                            Section("My Groups") {
-                                ForEach(viewModel.myGroups) { group in
-                                    row(for: group)
-                                }
-                            }
-                        }
-                        if !viewModel.guardingGroups.isEmpty {
-                            Section("Students I Guard") {
-                                ForEach(viewModel.guardingGroups) { group in
-                                    row(for: group)
-                                }
-                            }
-                        }
+                    List(viewModel.groups) { group in
+                        row(for: group)
                     }
                 }
             }
@@ -57,20 +44,22 @@ struct GroupListView: View {
             VStack(alignment: .leading, spacing: 4) {
                 HStack {
                     Text(group.name).font(.headline)
+                    Spacer()
                     if group.isAdmin(viewModel.currentUserId) {
-                        Text("Admin")
-                            .font(.caption2.bold())
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 2)
-                            .background(Color.accentColor.opacity(0.15))
-                            .cornerRadius(4)
+                        AdminBadge()
                     }
                 }
-                Text(group.studentId == viewModel.currentUserId
-                     ? "\(group.guardianIds.count) guardian(s)"
-                     : "Protecting \(group.studentName)")
-                    .font(.subheadline)
+                Label("Admin: \(group.admin?.displayName ?? "Unknown")", systemImage: "crown")
+                    .font(.caption)
                     .foregroundColor(.secondary)
+                HStack(spacing: 12) {
+                    Label("\(group.studentIds.count)", systemImage: UserMode.student.systemImage)
+                        .accessibilityLabel("\(group.studentIds.count) students")
+                    Label("\(group.guardianIds.count)", systemImage: UserMode.guardian.systemImage)
+                        .accessibilityLabel("\(group.guardianIds.count) guardians")
+                }
+                .font(.subheadline)
+                .foregroundColor(.secondary)
             }
         }
     }

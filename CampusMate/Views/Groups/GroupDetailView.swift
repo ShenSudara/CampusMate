@@ -21,30 +21,33 @@ struct GroupDetailView: View {
     private func content(for group: TrustedGroup) -> some View {
         let isAdmin = group.isAdmin(viewModel.currentUserId)
         return List {
-            Section("Student") {
-                memberRow(uid: group.studentId, group: group, badge: "Admin")
+            Section {
+                GroupAdminCard(admin: group.admin, isCurrentUser: isAdmin)
             }
 
-            Section {
-                if group.guardianIds.isEmpty {
-                    Text("No guardians yet.")
-                        .foregroundColor(.secondary)
-                }
-                ForEach(group.guardianIds, id: \.self) { uid in
-                    memberRow(uid: uid, group: group, badge: nil)
-                        .swipeActions {
-                            if isAdmin {
-                                Button("Remove", role: .destructive) {
-                                    Task { await viewModel.removeMember(uid, from: group) }
-                                }
-                            }
-                        }
-                }
-            } header: {
-                Text("Guardians")
-            } footer: {
-                if isAdmin && !group.guardianIds.isEmpty {
-                    Text("Swipe left on a guardian to remove them.")
+            memberSection(
+                title: "Students",
+                subtitle: "Sharing their journeys",
+                emptyText: "No members are in Student mode.",
+                ids: group.studentIds,
+                group: group,
+                canRemove: isAdmin
+            )
+
+            memberSection(
+                title: "Guardians",
+                subtitle: "Watching students' journeys",
+                emptyText: "No members are in Guardian mode.",
+                ids: group.guardianIds,
+                group: group,
+                canRemove: isAdmin
+            )
+
+            if isAdmin && group.memberIds.count > 1 {
+                Section {
+                    EmptyView()
+                } footer: {
+                    Text("Swipe left on a member to remove them. Roles change when members switch modes in their profile.")
                 }
             }
 
@@ -98,31 +101,94 @@ struct GroupDetailView: View {
         }
     }
 
-    private func memberRow(uid: String, group: TrustedGroup, badge: String?) -> some View {
+    private func memberSection(title: String, subtitle: String, emptyText: String,
+                               ids: [String], group: TrustedGroup, canRemove: Bool) -> some View {
+        Section {
+            if ids.isEmpty {
+                Text(emptyText)
+                    .foregroundColor(.secondary)
+            }
+            ForEach(ids, id: \.self) { uid in
+                memberRow(uid: uid, group: group)
+                    .swipeActions {
+                        if canRemove && uid != group.adminId {
+                            Button("Remove", role: .destructive) {
+                                Task { await viewModel.removeMember(uid, from: group) }
+                            }
+                        }
+                    }
+            }
+        } header: {
+            HStack {
+                Text(title)
+                Spacer()
+                Text(subtitle)
+                    .textCase(nil)
+            }
+        }
+    }
+
+    private func memberRow(uid: String, group: TrustedGroup) -> some View {
         let member = group.member(uid)
-        return HStack {
-            Image(systemName: "person.crop.circle.fill")
-                .font(.title2)
-                .foregroundColor(.secondary)
-            VStack(alignment: .leading) {
+        let mode = group.mode(of: uid)
+        return HStack(spacing: 12) {
+            Image(systemName: mode.systemImage)
+                .font(.title3)
+                .foregroundColor(.accentColor)
+                .frame(width: 28)
+            VStack(alignment: .leading, spacing: 2) {
                 Text(member?.displayName ?? "Unknown")
                     + Text(uid == viewModel.currentUserId ? " (You)" : "").foregroundColor(.secondary)
                 Text(member?.email ?? "")
                     .font(.caption)
                     .foregroundColor(.secondary)
-                if let mode = member?.activeMode {
-                    Label("Currently in \(mode.title) mode", systemImage: mode.systemImage)
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                }
             }
             Spacer()
-            if let badge {
-                Text(badge)
-                    .font(.caption2.bold())
-                    .foregroundColor(.accentColor)
+            if group.isAdmin(uid) {
+                AdminBadge()
             }
         }
+        .accessibilityElement(children: .combine)
+    }
+}
+
+private struct GroupAdminCard: View {
+    let admin: GroupMember?
+    let isCurrentUser: Bool
+
+    var body: some View {
+        HStack(spacing: 14) {
+            Image(systemName: "crown.fill")
+                .font(.title2)
+                .foregroundColor(.orange)
+                .frame(width: 44, height: 44)
+                .background(Color.orange.opacity(0.15))
+                .clipShape(Circle())
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Group Admin")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                Text((admin?.displayName ?? "Unknown") + (isCurrentUser ? " (You)" : ""))
+                    .font(.headline)
+                Text(admin?.email ?? "")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+        }
+        .padding(.vertical, 4)
+        .accessibilityElement(children: .combine)
+    }
+}
+
+struct AdminBadge: View {
+    var body: some View {
+        Label("Admin", systemImage: "crown.fill")
+            .font(.caption2.bold())
+            .foregroundColor(.orange)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 3)
+            .background(Color.orange.opacity(0.15))
+            .clipShape(Capsule())
     }
 }
 

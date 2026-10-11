@@ -24,7 +24,6 @@ final class GroupService {
         let group = TrustedGroup(
             name: name,
             adminId: creator.uid,
-            studentId: creator.uid,
             memberIds: [creator.uid],
             members: [creator.uid: GroupMember(email: creator.email,
                                                displayName: creator.displayName,

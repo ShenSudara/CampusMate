@@ -16,7 +16,7 @@ struct AddMemberView: View {
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
                 } footer: {
-                    Text("The person must already have a CampusMate account. They will be added as a guardian of \(group.name).")
+                    Text("The person must already have a CampusMate account. Their role in \(group.name) follows the mode they choose in their profile.")
                 }
                 if let errorMessage = viewModel.errorMessage {
                     Section {
@@ -57,7 +57,6 @@ struct AddMemberView: View {
             id: "family",
             name: "Family",
             adminId: "alex",
-            studentId: "alex",
             memberIds: ["alex", "maya"],
             members: [
                 "alex": GroupMember(email: "alex@example.com", displayName: "Alex Perera", activeMode: .student),
