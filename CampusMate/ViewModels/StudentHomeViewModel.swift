@@ -17,9 +17,14 @@ final class StudentHomeViewModel: ObservableObject {
     )
 
     private let searchService: PlaceSearchService
+    private let locationService: LocationService
+    private var locationObserver: UUID?
+    private var hasCenteredOnUser = false
 
-    init(searchService: PlaceSearchService = PlaceSearchService()) {
+    init(searchService: PlaceSearchService = PlaceSearchService(),
+         locationService: LocationService = .shared) {
         self.searchService = searchService
+        self.locationService = locationService
         searchService.onSuggestions = { [weak self] results in
             Task { @MainActor in self?.suggestions = results }
         }
@@ -31,6 +36,33 @@ final class StudentHomeViewModel: ObservableObject {
                 }
             }
         }
+    }
+
+    // Centres the map on the student once and biases search results to their area.
+    func startFollowingLocation() {
+        guard locationObserver == nil else { return }
+        locationObserver = locationService.observeLocation { [weak self] location in
+            Task { @MainActor in self?.handleLocation(location) }
+        }
+    }
+
+    func stopFollowingLocation() {
+        if let locationObserver {
+            locationService.removeObserver(locationObserver)
+        }
+        locationObserver = nil
+    }
+
+    private func handleLocation(_ location: CLLocation) {
+        let nearby = MKCoordinateRegion(
+            center: location.coordinate,
+            span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
+        )
+        searchService.setSearchRegion(nearby)
+        if !hasCenteredOnUser && destination == nil {
+            mapRegion = nearby
+        }
+        hasCenteredOnUser = true
     }
 
     func select(_ suggestion: PlaceSuggestion) async -> Bool {

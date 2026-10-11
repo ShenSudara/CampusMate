@@ -9,6 +9,7 @@ struct MainTabView: View {
     @StateObject private var session = SessionViewModel()
     @StateObject private var groupsViewModel = GroupsViewModel()
     @StateObject private var studentHomeViewModel = StudentHomeViewModel()
+    @StateObject private var tripViewModel = TripViewModel()
     @State private var selectedTab: Tab = .home
 
     var body: some View {
@@ -33,6 +34,8 @@ struct MainTabView: View {
                 TabView(selection: $selectedTab) {
                     HomeView(session: session,
                              studentHomeViewModel: studentHomeViewModel,
+                             tripViewModel: tripViewModel,
+                             groupsViewModel: groupsViewModel,
                              onOpenDestination: { selectedTab = .destination })
                         .tabItem { Label("Home", systemImage: session.mode.systemImage) }
                         .tag(Tab.home)
@@ -59,6 +62,8 @@ struct MainTabView: View {
             await session.start()
             if let uid = session.userId {
                 groupsViewModel.start(uid: uid)
+                tripViewModel.start(uid: uid)
+                studentHomeViewModel.startFollowingLocation()
             }
         }
     }

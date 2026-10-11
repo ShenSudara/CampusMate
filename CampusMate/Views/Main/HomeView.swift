@@ -3,6 +3,8 @@ import SwiftUI
 struct HomeView: View {
     @ObservedObject var session: SessionViewModel
     @ObservedObject var studentHomeViewModel: StudentHomeViewModel
+    @ObservedObject var tripViewModel: TripViewModel
+    @ObservedObject var groupsViewModel: GroupsViewModel
     let onOpenDestination: () -> Void
 
     var body: some View {
@@ -12,6 +14,8 @@ struct HomeView: View {
                 case .student:
                     StudentHomeView(session: session,
                                     viewModel: studentHomeViewModel,
+                                    tripViewModel: tripViewModel,
+                                    groupsViewModel: groupsViewModel,
                                     onOpenDestination: onOpenDestination)
                 case .guardian:
                     VStack(spacing: 16) {
@@ -32,5 +36,9 @@ struct HomeView: View {
 }
 
 #Preview {
-    HomeView(session: SessionViewModel(), studentHomeViewModel: StudentHomeViewModel(), onOpenDestination: {})
+    HomeView(session: SessionViewModel(),
+             studentHomeViewModel: StudentHomeViewModel(),
+             tripViewModel: TripViewModel(),
+             groupsViewModel: GroupsViewModel(),
+             onOpenDestination: {})
 }
