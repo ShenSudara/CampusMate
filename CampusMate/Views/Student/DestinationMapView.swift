@@ -127,15 +127,19 @@ struct DestinationMapView: View {
     }
 
     private var tripBanner: some View {
-        HStack {
-            Label("Journey in progress", systemImage: "dot.radiowaves.left.and.right")
-                .font(.subheadline.bold())
-                .foregroundColor(.green)
-            Spacer()
-            if let trip = activeTrip {
-                Text(trip.startedAt, style: .timer)
-                    .font(.subheadline.monospacedDigit())
+        VStack(alignment: .leading, spacing: 4) {
+            HStack {
+                Label("Journey in progress", systemImage: "dot.radiowaves.left.and.right")
+                    .font(.subheadline.bold())
+                    .foregroundColor(.green)
+                Spacer()
+                if let trip = activeTrip {
+                    Text(trip.startedAt, style: .timer)
+                        .font(.subheadline.monospacedDigit())
+                }
             }
+            SharingStatusView(lastSharedAt: tripViewModel.lastSharedAt,
+                              errorMessage: tripViewModel.sharingError)
         }
         .padding(12)
         .background(.regularMaterial)

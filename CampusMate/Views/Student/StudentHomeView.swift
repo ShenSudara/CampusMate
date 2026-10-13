@@ -30,6 +30,8 @@ struct StudentHomeView: View {
                 } else if let trip = tripViewModel.activeTrip {
                     ActiveTripCard(trip: trip,
                                    userCoordinate: viewModel.userCoordinate,
+                                   lastSharedAt: tripViewModel.lastSharedAt,
+                                   sharingError: tripViewModel.sharingError,
                                    isWorking: tripViewModel.isWorking) {
                         Task { await tripViewModel.endTrip() }
                     }

@@ -10,15 +10,30 @@ final class TripViewModel: ObservableObject {
     @Published private(set) var isLoading = true
     @Published private(set) var isWorking = false
     @Published var errorMessage: String?
+    @Published private(set) var lastSharedAt: Date?
+    @Published private(set) var sharingError: String?
 
     private let tripService: TripService
     private let locationService: LocationService
+    private let liveLocationService: LiveLocationService
     private var tripListener: ListenerRegistration?
     private var authorizationObserver: UUID?
 
-    init(tripService: TripService = .shared, locationService: LocationService = .shared) {
+    init(tripService: TripService = .shared,
+         locationService: LocationService = .shared,
+         liveLocationService: LiveLocationService = .shared) {
         self.tripService = tripService
         self.locationService = locationService
+        self.liveLocationService = liveLocationService
+        liveLocationService.onUpload = { [weak self] date in
+            Task { @MainActor in
+                self?.lastSharedAt = date
+                self?.sharingError = nil
+            }
+        }
+        liveLocationService.onError = { [weak self] error in
+            Task { @MainActor in self?.sharingError = AppError.userMessage(for: error) }
+        }
     }
 
     var isLocationDenied: Bool {
@@ -33,9 +48,11 @@ final class TripViewModel: ObservableObject {
         if authorizationObserver == nil {
             authorizationObserver = locationService.observeAuthorization { [weak self] status in
                 Task { @MainActor in
-                    self?.authorizationStatus = status
+                    guard let self else { return }
+                    self.authorizationStatus = status
                     if status == .authorizedWhenInUse || status == .authorizedAlways {
-                        self?.locationService.requestCurrentLocation()
+                        self.locationService.requestCurrentLocation()
+                        self.updateSharing()
                     }
                 }
             }
@@ -47,6 +64,7 @@ final class TripViewModel: ObservableObject {
                 switch result {
                 case .success(let trip):
                     self.activeTrip = trip
+                    self.updateSharing()
                 case .failure(let error):
                     self.errorMessage = AppError.userMessage(for: error)
                 }
@@ -55,7 +73,19 @@ final class TripViewModel: ObservableObject {
         }
     }
 
+    // Shares location exactly while there is an active trip.
+    private func updateSharing() {
+        if let tripId = activeTrip?.id {
+            liveLocationService.startSharing(tripId: tripId)
+        } else {
+            liveLocationService.stopSharing()
+            lastSharedAt = nil
+            sharingError = nil
+        }
+    }
+
     func stop() {
+        liveLocationService.stopSharing()
         tripListener?.remove()
         tripListener = nil
         if let authorizationObserver {

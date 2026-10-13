@@ -61,6 +61,10 @@ struct MainTabView: View {
                 }
             }
         }
+        .onDisappear {
+            tripViewModel.stop()
+            studentHomeViewModel.stopFollowingLocation()
+        }
         .task {
             await session.start()
             if let uid = session.userId {

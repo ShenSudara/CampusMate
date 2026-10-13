@@ -21,6 +21,7 @@ struct Trip: Codable, Identifiable, Equatable {
     var lastLatitude: Double?
     var lastLongitude: Double?
     var lastLocationAt: Date?
+    var lastSpeed: Double?
 
     var lastCoordinate: CLLocationCoordinate2D? {
         guard let lastLatitude, let lastLongitude else { return nil }

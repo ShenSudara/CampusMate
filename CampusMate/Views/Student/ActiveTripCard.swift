@@ -4,6 +4,8 @@ import CoreLocation
 struct ActiveTripCard: View {
     let trip: Trip
     let userCoordinate: CLLocationCoordinate2D?
+    var lastSharedAt: Date?
+    var sharingError: String?
     let isWorking: Bool
     let onEnd: () -> Void
     @State private var confirmEnd = false
@@ -35,6 +37,8 @@ struct ActiveTripCard: View {
                     .font(.headline.monospacedDigit())
                     .accessibilityLabel("Elapsed time")
             }
+
+            SharingStatusView(lastSharedAt: lastSharedAt, errorMessage: sharingError)
 
             HStack(alignment: .top, spacing: 12) {
                 Image(systemName: "flag.checkered")
@@ -87,6 +91,7 @@ struct ActiveTripCard: View {
             startedAt: Date().addingTimeInterval(-600)
         ),
         userCoordinate: CLLocationCoordinate2D(latitude: 6.9271, longitude: 79.8612),
+        lastSharedAt: Date().addingTimeInterval(-8),
         isWorking: false,
         onEnd: {}
     )

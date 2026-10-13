@@ -1,0 +1,14 @@
+import Foundation
+import CoreLocation
+
+// Tuning values for live location sharing during a journey.
+enum LocationSharingSettings {
+    // Upload at least this often while the student is moving or standing still.
+    static let maximumUploadInterval: TimeInterval = 15
+    // Upload sooner than the interval once the student has moved this far.
+    static let minimumUploadDistance: CLLocationDistance = 25
+    // Never upload more often than this, even when moving fast.
+    static let minimumUploadInterval: TimeInterval = 5
+    // Ignore fixes less accurate than this (in metres).
+    static let maximumAcceptedAccuracy: CLLocationAccuracy = 100
+}

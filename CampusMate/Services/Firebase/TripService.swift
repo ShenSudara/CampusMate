@@ -49,6 +49,27 @@ final class TripService {
         return tripRef.documentID
     }
 
+    // Saves the latest position on the trip and adds it to the breadcrumb trail.
+    // Firestore queues the write while offline, so this does not wait for the server.
+    func uploadLocation(_ point: LocationPoint, tripId: String, completion: @escaping (Error?) -> Void) {
+        let tripRef = trips.document(tripId)
+        let batch = db.batch()
+        var tripUpdate: [String: Any] = [
+            "lastLatitude": point.latitude,
+            "lastLongitude": point.longitude,
+            "lastLocationAt": Timestamp(date: point.timestamp)
+        ]
+        tripUpdate["lastSpeed"] = point.speed ?? FieldValue.delete()
+        batch.updateData(tripUpdate, forDocument: tripRef)
+        do {
+            try batch.setData(from: point, forDocument: tripRef.collection("locations").document())
+        } catch {
+            completion(error)
+            return
+        }
+        batch.commit(completion: completion)
+    }
+
     func endTrip(tripId: String, studentId: String) async throws {
         let batch = db.batch()
         batch.updateData([
