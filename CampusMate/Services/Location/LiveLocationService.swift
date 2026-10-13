@@ -52,6 +52,7 @@ final class LiveLocationService {
         guard let tripId,
               location.horizontalAccuracy >= 0,
               location.horizontalAccuracy <= LocationSharingSettings.maximumAcceptedAccuracy,
+              abs(location.timestamp.timeIntervalSinceNow) <= LocationSharingSettings.maximumLocationAge,
               shouldUpload(location) else { return }
 
         lastUploadAttempt = Date()

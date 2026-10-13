@@ -11,6 +11,8 @@ enum LocationSharingSettings {
     static let minimumUploadInterval: TimeInterval = 5
     // Ignore fixes less accurate than this (in metres).
     static let maximumAcceptedAccuracy: CLLocationAccuracy = 100
+    // Ignore cached fixes older than this, e.g. a position from before the journey started.
+    static let maximumLocationAge: TimeInterval = 30
     // Guardians see "Signal lost" when the newest update is older than this.
     static let staleLocationThreshold: TimeInterval = 120
 }
