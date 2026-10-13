@@ -19,13 +19,14 @@ struct DestinationMapView: View {
 
     var body: some View {
         ZStack(alignment: .top) {
-            Map(coordinateRegion: $viewModel.mapRegion,
-                showsUserLocation: true,
-                annotationItems: mapDestination.map { [$0] } ?? []) { place in
-                MapMarker(coordinate: place.coordinate, tint: .red)
-            }
+            RoutePlanningMapView(
+                region: viewModel.mapRegion,
+                regionChangeId: viewModel.regionChangeId,
+                destination: mapDestination,
+                routePolyline: viewModel.route?.polyline,
+                onTap: { isSearchFocused = false }
+            )
             .ignoresSafeArea(edges: .top)
-            .onTapGesture { isSearchFocused = false }
 
             VStack(spacing: 8) {
                 if activeTrip == nil {
@@ -88,10 +89,9 @@ struct DestinationMapView: View {
             }
         }
         .onChange(of: activeTrip?.id) { _ in
-            if let trip = activeTrip {
-                viewModel.showRoute(to: trip.destination)
-            }
+            refreshRoute()
         }
+        .onAppear(perform: refreshRoute)
         .confirmationDialog("Cancel this journey?", isPresented: $confirmCancel, titleVisibility: .visible) {
             Button("Cancel Journey", role: .destructive) {
                 Task { await tripViewModel.endTrip() }
@@ -99,6 +99,42 @@ struct DestinationMapView: View {
             Button("Keep Sharing", role: .cancel) {}
         } message: {
             Text("Location sharing will stop and your group will see the journey as finished.")
+        }
+    }
+
+    private func refreshRoute() {
+        if let destination = mapDestination {
+            viewModel.showRoute(to: destination)
+        } else {
+            viewModel.clearRoute()
+        }
+    }
+
+    @ViewBuilder
+    private var routeSummary: some View {
+        if let route = viewModel.route {
+            Label {
+                Text("\(Formatters.duration(route.expectedTravelTime)) · \(Formatters.distance(route.distance))")
+                    + Text(route.transportType == .walking ? " walking" : " by road").foregroundColor(.secondary)
+            } icon: {
+                Image(systemName: route.transportType == .walking ? "figure.walk" : "car.fill")
+                    .foregroundColor(.purple)
+            }
+            .font(.subheadline)
+            .frame(maxWidth: .infinity, alignment: .leading)
+        } else if viewModel.isRouting {
+            HStack(spacing: 8) {
+                ProgressView()
+                Text("Finding the best route…")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        } else if let routeError = viewModel.routeError {
+            Label(routeError, systemImage: "exclamationmark.triangle")
+                .font(.caption)
+                .foregroundColor(.orange)
+                .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 
@@ -157,11 +193,7 @@ struct DestinationMapView: View {
                 ForEach(viewModel.suggestions) { suggestion in
                     Button {
                         isSearchFocused = false
-                        Task {
-                            if await viewModel.select(suggestion), let destination = viewModel.destination {
-                                viewModel.showRoute(to: destination)
-                            }
-                        }
+                        Task { await viewModel.select(suggestion) }
                     } label: {
                         HStack(spacing: 12) {
                             Image(systemName: "mappin.circle.fill")
@@ -220,6 +252,7 @@ struct DestinationMapView: View {
     private func selectedPanel(for destination: Destination) -> some View {
         VStack(spacing: 14) {
             destinationRow(for: destination, removable: true)
+            routeSummary
             Button {
                 Task {
                     await tripViewModel.startTrip(student: session.user,
@@ -252,6 +285,7 @@ struct DestinationMapView: View {
     private func activeTripPanel(for trip: Trip) -> some View {
         VStack(spacing: 14) {
             destinationRow(for: trip.destination, removable: false)
+            routeSummary
             Button(role: .destructive) {
                 confirmCancel = true
             } label: {
