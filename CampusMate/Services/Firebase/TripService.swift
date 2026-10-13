@@ -73,6 +73,24 @@ final class TripService {
             }
     }
 
+    // Every trip shared with this user by other members; sorted on the device.
+    func listenToSharedTrips(memberId: String,
+                             onChange: @escaping (Result<[Trip], Error>) -> Void) -> ListenerRegistration {
+        trips
+            .whereField("memberIds", arrayContains: memberId)
+            .addSnapshotListener { snapshot, error in
+                if let error {
+                    onChange(.failure(error))
+                    return
+                }
+                let result = (snapshot?.documents ?? [])
+                    .compactMap { try? $0.data(as: Trip.self) }
+                    .filter { $0.studentId != memberId }
+                    .sorted { $0.startedAt > $1.startedAt }
+                onChange(.success(result))
+            }
+    }
+
     func fetchPath(tripId: String) async throws -> [LocationPoint] {
         let snapshot = try await trips.document(tripId).collection("locations")
             .order(by: "timestamp")

@@ -40,6 +40,7 @@ struct TripDetailView: View {
             }
 
             Section("Journey") {
+                LabeledContent("Student", value: trip.studentName)
                 LabeledContent("Started", value: trip.startedAt.formatted(date: .abbreviated, time: .shortened))
                 if let endedAt = trip.endedAt {
                     LabeledContent("Ended", value: endedAt.formatted(date: .omitted, time: .shortened))

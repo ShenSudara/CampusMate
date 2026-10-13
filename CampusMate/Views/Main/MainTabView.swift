@@ -50,11 +50,9 @@ struct MainTabView: View {
                             .tabItem { Label("Destination", systemImage: "map") }
                             .tag(Tab.destination)
                     }
-                    if session.mode == .student {
-                        TripHistoryView(viewModel: historyViewModel)
-                            .tabItem { Label("History", systemImage: "clock.arrow.circlepath") }
-                            .tag(Tab.history)
-                    }
+                    TripHistoryView(viewModel: historyViewModel, mode: session.mode)
+                        .tabItem { Label("History", systemImage: "clock.arrow.circlepath") }
+                        .tag(Tab.history)
                     GroupListView(viewModel: groupsViewModel, session: session)
                         .tabItem { Label("Groups", systemImage: "person.3") }
                         .tag(Tab.groups)
@@ -63,7 +61,7 @@ struct MainTabView: View {
                         .tag(Tab.profile)
                 }
                 .onChange(of: session.mode) { mode in
-                    if mode == .guardian && (selectedTab == .destination || selectedTab == .history) {
+                    if mode == .guardian && selectedTab == .destination {
                         selectedTab = .home
                     }
                 }
