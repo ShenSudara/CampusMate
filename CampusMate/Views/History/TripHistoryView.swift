@@ -3,6 +3,7 @@ import SwiftUI
 struct TripHistoryView: View {
     @ObservedObject var viewModel: TripHistoryViewModel
     let mode: UserMode
+    @State private var tripPendingDelete: Trip?
 
     private var trips: [Trip] {
         mode == .student ? viewModel.myPastTrips : viewModel.sharedPastTrips
@@ -24,14 +25,42 @@ struct TripHistoryView: View {
                 } else if trips.isEmpty {
                     emptyState
                 } else {
-                    List(trips) { trip in
-                        NavigationLink {
-                            TripDetailView(viewModel: TripDetailViewModel(trip: trip))
-                        } label: {
-                            TripHistoryRow(trip: trip, showsStudent: mode == .guardian)
+                    List {
+                        if let errorMessage = viewModel.errorMessage {
+                            Text(errorMessage)
+                                .font(.footnote)
+                                .foregroundColor(.red)
+                        }
+                        ForEach(trips) { trip in
+                            NavigationLink {
+                                TripDetailView(viewModel: TripDetailViewModel(trip: trip))
+                            } label: {
+                                TripHistoryRow(trip: trip, showsStudent: mode == .guardian)
+                                    .opacity(viewModel.deletingTripIds.contains(trip.id ?? "") ? 0.4 : 1)
+                            }
+                            .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                if mode == .student {
+                                    Button(role: .destructive) {
+                                        tripPendingDelete = trip
+                                    } label: {
+                                        Label("Delete", systemImage: "trash")
+                                    }
+                                }
+                            }
                         }
                     }
                 }
+            }
+            .confirmationDialog("Delete this journey?",
+                                isPresented: Binding(get: { tripPendingDelete != nil },
+                                                     set: { if !$0 { tripPendingDelete = nil } }),
+                                titleVisibility: .visible,
+                                presenting: tripPendingDelete) { trip in
+                Button("Delete Journey", role: .destructive) {
+                    Task { await viewModel.delete(trip) }
+                }
+            } message: { trip in
+                Text("Your journey to \(trip.destination.name) and its route will be removed for you and your group. This can't be undone.")
             }
             .navigationTitle(mode == .student ? "My Journeys" : "Student Journeys")
             .toolbar {

@@ -16,6 +16,7 @@ final class TripHistoryViewModel: ObservableObject {
     @Published private(set) var isLoadingShared = true
     @Published var selectedStudentId: String?
     @Published var errorMessage: String?
+    @Published private(set) var deletingTripIds = Set<String>()
 
     private let tripService: TripService
     private var myListener: ListenerRegistration?
@@ -73,6 +74,18 @@ final class TripHistoryViewModel: ObservableObject {
         selectedStudentId = nil
         isLoadingMine = true
         isLoadingShared = true
+    }
+
+    func delete(_ trip: Trip) async {
+        guard let tripId = trip.id, trip.status == .completed else { return }
+        deletingTripIds.insert(tripId)
+        errorMessage = nil
+        defer { deletingTripIds.remove(tripId) }
+        do {
+            try await tripService.deleteTrip(tripId: tripId)
+        } catch {
+            errorMessage = AppError.userMessage(for: error)
+        }
     }
 
     private func handle(_ result: Result<[Trip], Error>, apply: ([Trip]) -> Void) {

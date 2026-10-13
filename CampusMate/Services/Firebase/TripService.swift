@@ -91,6 +91,19 @@ final class TripService {
             }
     }
 
+    // Deletes a finished trip with its breadcrumb points. Firestore does not delete
+    // subcollections automatically, so the points are removed in batches first.
+    func deleteTrip(tripId: String) async throws {
+        let tripRef = trips.document(tripId)
+        let points = try await tripRef.collection("locations").getDocuments().documents
+        for chunk in stride(from: 0, to: points.count, by: 400).map({ Array(points[$0..<min($0 + 400, points.count)]) }) {
+            let batch = db.batch()
+            chunk.forEach { batch.deleteDocument($0.reference) }
+            try await batch.commit()
+        }
+        try await tripRef.delete()
+    }
+
     func fetchPath(tripId: String) async throws -> [LocationPoint] {
         let snapshot = try await trips.document(tripId).collection("locations")
             .order(by: "timestamp")
