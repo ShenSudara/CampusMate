@@ -25,6 +25,37 @@ final class TripService {
             }
     }
 
+    // Active trips this user can watch, i.e. trips of other members of their groups.
+    func listenToWatchableTrips(memberId: String,
+                                onChange: @escaping (Result<[Trip], Error>) -> Void) -> ListenerRegistration {
+        trips
+            .whereField("memberIds", arrayContains: memberId)
+            .whereField("status", isEqualTo: TripStatus.active.rawValue)
+            .addSnapshotListener { snapshot, error in
+                if let error {
+                    onChange(.failure(error))
+                    return
+                }
+                let result = (snapshot?.documents ?? [])
+                    .compactMap { try? $0.data(as: Trip.self) }
+                    .filter { $0.studentId != memberId }
+                onChange(.success(result))
+            }
+    }
+
+    func listenToPath(tripId: String,
+                      onChange: @escaping (Result<[LocationPoint], Error>) -> Void) -> ListenerRegistration {
+        trips.document(tripId).collection("locations")
+            .order(by: "timestamp")
+            .addSnapshotListener { snapshot, error in
+                if let error {
+                    onChange(.failure(error))
+                    return
+                }
+                onChange(.success((snapshot?.documents ?? []).compactMap { try? $0.data(as: LocationPoint.self) }))
+            }
+    }
+
     // Creates the trip and links it to the user's profile in one write.
     func startTrip(student: AppUser, groups: [TrustedGroup], destination: Destination,
                    location: CLLocationCoordinate2D?) async throws -> String {

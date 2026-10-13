@@ -5,6 +5,7 @@ struct HomeView: View {
     @ObservedObject var studentHomeViewModel: StudentHomeViewModel
     @ObservedObject var tripViewModel: TripViewModel
     @ObservedObject var groupsViewModel: GroupsViewModel
+    @ObservedObject var guardianViewModel: GuardianViewModel
     let onOpenDestination: () -> Void
 
     var body: some View {
@@ -18,16 +19,8 @@ struct HomeView: View {
                                     groupsViewModel: groupsViewModel,
                                     onOpenDestination: onOpenDestination)
                 case .guardian:
-                    VStack(spacing: 16) {
-                        Image(systemName: session.mode.systemImage)
-                            .font(.system(size: 56))
-                            .foregroundColor(.accentColor)
-                        Text("Hi, \(session.user?.displayName ?? "")")
-                            .font(.title2.bold())
-                        Text("You are in Guardian mode.")
-                            .foregroundColor(.secondary)
-                    }
-                    .padding()
+                    GuardianHomeView(viewModel: guardianViewModel)
+                        .navigationBarTitleDisplayMode(.inline)
                 }
             }
             .navigationTitle(session.mode.title)
@@ -40,5 +33,6 @@ struct HomeView: View {
              studentHomeViewModel: StudentHomeViewModel(),
              tripViewModel: TripViewModel(),
              groupsViewModel: GroupsViewModel(),
+             guardianViewModel: GuardianViewModel(),
              onOpenDestination: {})
 }

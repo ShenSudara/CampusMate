@@ -10,6 +10,7 @@ struct MainTabView: View {
     @StateObject private var groupsViewModel = GroupsViewModel()
     @StateObject private var studentHomeViewModel = StudentHomeViewModel()
     @StateObject private var tripViewModel = TripViewModel()
+    @StateObject private var guardianViewModel = GuardianViewModel()
     @State private var selectedTab: Tab = .home
 
     var body: some View {
@@ -36,6 +37,7 @@ struct MainTabView: View {
                              studentHomeViewModel: studentHomeViewModel,
                              tripViewModel: tripViewModel,
                              groupsViewModel: groupsViewModel,
+                             guardianViewModel: guardianViewModel,
                              onOpenDestination: { selectedTab = .destination })
                         .tabItem { Label("Home", systemImage: session.mode.systemImage) }
                         .tag(Tab.home)
@@ -63,6 +65,7 @@ struct MainTabView: View {
         }
         .onDisappear {
             tripViewModel.stop()
+            guardianViewModel.stop()
             studentHomeViewModel.stopFollowingLocation()
         }
         .task {
@@ -70,6 +73,7 @@ struct MainTabView: View {
             if let uid = session.userId {
                 groupsViewModel.start(uid: uid)
                 tripViewModel.start(uid: uid)
+                guardianViewModel.start(uid: uid, savedSelection: session.user?.selectedStudentId)
                 studentHomeViewModel.startFollowingLocation()
             }
         }

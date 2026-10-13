@@ -23,6 +23,11 @@ struct Trip: Codable, Identifiable, Equatable {
     var lastLocationAt: Date?
     var lastSpeed: Double?
 
+    func isLocationStale(at date: Date = Date()) -> Bool {
+        guard let lastLocationAt else { return true }
+        return date.timeIntervalSince(lastLocationAt) > LocationSharingSettings.staleLocationThreshold
+    }
+
     var lastCoordinate: CLLocationCoordinate2D? {
         guard let lastLatitude, let lastLongitude else { return nil }
         return CLLocationCoordinate2D(latitude: lastLatitude, longitude: lastLongitude)
