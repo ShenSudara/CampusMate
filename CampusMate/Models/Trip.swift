@@ -23,6 +23,11 @@ struct Trip: Codable, Identifiable, Equatable {
     var lastLocationAt: Date?
     var lastSpeed: Double?
 
+    var duration: TimeInterval? {
+        guard let endedAt else { return nil }
+        return endedAt.timeIntervalSince(startedAt)
+    }
+
     func isLocationStale(at date: Date = Date()) -> Bool {
         guard let lastLocationAt else { return true }
         return date.timeIntervalSince(lastLocationAt) > LocationSharingSettings.staleLocationThreshold

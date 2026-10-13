@@ -2,7 +2,7 @@ import SwiftUI
 
 struct MainTabView: View {
     enum Tab {
-        case home, destination, groups, profile
+        case home, destination, history, groups, profile
     }
 
     @ObservedObject var authViewModel: AuthViewModel
@@ -11,6 +11,7 @@ struct MainTabView: View {
     @StateObject private var studentHomeViewModel = StudentHomeViewModel()
     @StateObject private var tripViewModel = TripViewModel()
     @StateObject private var guardianViewModel = GuardianViewModel()
+    @StateObject private var historyViewModel = TripHistoryViewModel()
     @State private var selectedTab: Tab = .home
 
     var body: some View {
@@ -49,6 +50,11 @@ struct MainTabView: View {
                             .tabItem { Label("Destination", systemImage: "map") }
                             .tag(Tab.destination)
                     }
+                    if session.mode == .student {
+                        TripHistoryView(viewModel: historyViewModel)
+                            .tabItem { Label("History", systemImage: "clock.arrow.circlepath") }
+                            .tag(Tab.history)
+                    }
                     GroupListView(viewModel: groupsViewModel, session: session)
                         .tabItem { Label("Groups", systemImage: "person.3") }
                         .tag(Tab.groups)
@@ -57,7 +63,7 @@ struct MainTabView: View {
                         .tag(Tab.profile)
                 }
                 .onChange(of: session.mode) { mode in
-                    if mode == .guardian && selectedTab == .destination {
+                    if mode == .guardian && (selectedTab == .destination || selectedTab == .history) {
                         selectedTab = .home
                     }
                 }
@@ -66,6 +72,7 @@ struct MainTabView: View {
         .onDisappear {
             tripViewModel.stop()
             guardianViewModel.stop()
+            historyViewModel.stop()
             studentHomeViewModel.stopFollowingLocation()
         }
         .task {
@@ -73,6 +80,7 @@ struct MainTabView: View {
             if let uid = session.userId {
                 groupsViewModel.start(uid: uid)
                 tripViewModel.start(uid: uid)
+                historyViewModel.start(uid: uid)
                 guardianViewModel.start(uid: uid, savedSelection: session.user?.selectedStudentId)
                 studentHomeViewModel.startFollowingLocation()
             }

@@ -56,6 +56,30 @@ final class TripService {
             }
     }
 
+    // All of a student's trips; sorted on the device so no composite index is needed.
+    func listenToTrips(studentId: String,
+                       onChange: @escaping (Result<[Trip], Error>) -> Void) -> ListenerRegistration {
+        trips
+            .whereField("studentId", isEqualTo: studentId)
+            .addSnapshotListener { snapshot, error in
+                if let error {
+                    onChange(.failure(error))
+                    return
+                }
+                let result = (snapshot?.documents ?? [])
+                    .compactMap { try? $0.data(as: Trip.self) }
+                    .sorted { $0.startedAt > $1.startedAt }
+                onChange(.success(result))
+            }
+    }
+
+    func fetchPath(tripId: String) async throws -> [LocationPoint] {
+        let snapshot = try await trips.document(tripId).collection("locations")
+            .order(by: "timestamp")
+            .getDocuments()
+        return snapshot.documents.compactMap { try? $0.data(as: LocationPoint.self) }
+    }
+
     // Creates the trip and links it to the user's profile in one write.
     func startTrip(student: AppUser, groups: [TrustedGroup], destination: Destination,
                    location: CLLocationCoordinate2D?) async throws -> String {
