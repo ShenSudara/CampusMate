@@ -20,6 +20,7 @@ final class StudentHomeViewModel: ObservableObject {
     @Published private(set) var regionChangeId = 0
     @Published private(set) var route: RouteInfo?
     @Published private(set) var isRouting = false
+    @Published private(set) var noRouteFound = false
 
     private let searchService: PlaceSearchService
     private let locationService: LocationService
@@ -120,9 +121,15 @@ final class StudentHomeViewModel: ObservableObject {
         guard let start = userCoordinate else { return }
         isRouting = true
         defer { isRouting = false }
+        noRouteFound = false
         let result = await routeService.route(from: start, to: destination.coordinate)
         // Ignore a late result for a destination that is no longer selected.
         guard routeTarget == destination else { return }
+        guard let result else {
+            // The map already shows both the student and the destination.
+            noRouteFound = true
+            return
+        }
         route = result
         var region = MKCoordinateRegion(result.polyline.boundingMapRect)
         region.span.latitudeDelta = max(region.span.latitudeDelta * 1.4, 0.01)
@@ -138,6 +145,7 @@ final class StudentHomeViewModel: ObservableObject {
     func clearRoute() {
         routeTarget = nil
         route = nil
+        noRouteFound = false
     }
 
     func clearDestination() {

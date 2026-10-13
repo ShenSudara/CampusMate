@@ -114,13 +114,8 @@ struct DestinationMapView: View {
     private var routeSummary: some View {
         if let route = viewModel.route {
             Label {
-                if let time = route.expectedTravelTime {
-                    Text("\(Formatters.duration(time)) · \(Formatters.distance(route.distance))")
-                        + Text(" \(routeDescription(route.kind))").foregroundColor(.secondary)
-                } else {
-                    Text("\(Formatters.distance(route.distance))")
-                        + Text(" straight-line distance · no road directions for this area").foregroundColor(.secondary)
-                }
+                Text("\(Formatters.duration(route.expectedTravelTime)) · \(Formatters.distance(route.distance))")
+                    + Text(" \(routeDescription(route.kind))").foregroundColor(.secondary)
             } icon: {
                 Image(systemName: routeIcon(route.kind))
                     .foregroundColor(.purple)
@@ -135,6 +130,12 @@ struct DestinationMapView: View {
                     .foregroundColor(.secondary)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
+        } else if viewModel.noRouteFound {
+            Label("No route available for this area. Your location and the destination are shown on the map.",
+                  systemImage: "map")
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
         } else if viewModel.userCoordinate == nil {
             Label("Waiting for your location to draw the route…", systemImage: "location.magnifyingglass")
                 .font(.caption)
@@ -148,7 +149,6 @@ struct DestinationMapView: View {
         case .walking: return "walking"
         case .driving: return "by road"
         case .transit: return "by transit"
-        case .direct: return ""
         }
     }
 
@@ -157,7 +157,6 @@ struct DestinationMapView: View {
         case .walking: return "figure.walk"
         case .driving: return "car.fill"
         case .transit: return "bus.fill"
-        case .direct: return "arrow.up.right"
         }
     }
 
