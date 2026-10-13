@@ -68,6 +68,10 @@ struct RoutePlanningMapView: UIViewRepresentable {
             renderer.lineWidth = 6
             renderer.lineCap = .round
             renderer.lineJoin = .round
+            // A direct line (only two points) is dashed so it isn't mistaken for a road route.
+            if polyline.pointCount == 2 {
+                renderer.lineDashPattern = [8, 8]
+            }
             return renderer
         }
 

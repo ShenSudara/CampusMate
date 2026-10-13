@@ -114,10 +114,15 @@ struct DestinationMapView: View {
     private var routeSummary: some View {
         if let route = viewModel.route {
             Label {
-                Text("\(Formatters.duration(route.expectedTravelTime)) · \(Formatters.distance(route.distance))")
-                    + Text(route.transportType == .walking ? " walking" : " by road").foregroundColor(.secondary)
+                if let time = route.expectedTravelTime {
+                    Text("\(Formatters.duration(time)) · \(Formatters.distance(route.distance))")
+                        + Text(" \(routeDescription(route.kind))").foregroundColor(.secondary)
+                } else {
+                    Text("\(Formatters.distance(route.distance))")
+                        + Text(" straight-line distance · no road directions for this area").foregroundColor(.secondary)
+                }
             } icon: {
-                Image(systemName: route.transportType == .walking ? "figure.walk" : "car.fill")
+                Image(systemName: routeIcon(route.kind))
                     .foregroundColor(.purple)
             }
             .font(.subheadline)
@@ -130,11 +135,29 @@ struct DestinationMapView: View {
                     .foregroundColor(.secondary)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-        } else if let routeError = viewModel.routeError {
-            Label(routeError, systemImage: "exclamationmark.triangle")
+        } else if viewModel.userCoordinate == nil {
+            Label("Waiting for your location to draw the route…", systemImage: "location.magnifyingglass")
                 .font(.caption)
-                .foregroundColor(.orange)
+                .foregroundColor(.secondary)
                 .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+
+    private func routeDescription(_ kind: RouteInfo.Kind) -> String {
+        switch kind {
+        case .walking: return "walking"
+        case .driving: return "by road"
+        case .transit: return "by transit"
+        case .direct: return ""
+        }
+    }
+
+    private func routeIcon(_ kind: RouteInfo.Kind) -> String {
+        switch kind {
+        case .walking: return "figure.walk"
+        case .driving: return "car.fill"
+        case .transit: return "bus.fill"
+        case .direct: return "arrow.up.right"
         }
     }
 

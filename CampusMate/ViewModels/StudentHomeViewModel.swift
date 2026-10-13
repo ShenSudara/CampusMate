@@ -20,7 +20,6 @@ final class StudentHomeViewModel: ObservableObject {
     @Published private(set) var regionChangeId = 0
     @Published private(set) var route: RouteInfo?
     @Published private(set) var isRouting = false
-    @Published private(set) var routeError: String?
 
     private let searchService: PlaceSearchService
     private let locationService: LocationService
@@ -120,22 +119,15 @@ final class StudentHomeViewModel: ObservableObject {
     private func loadRoute(to destination: Destination) async {
         guard let start = userCoordinate else { return }
         isRouting = true
-        routeError = nil
         defer { isRouting = false }
-        do {
-            let result = try await routeService.route(from: start, to: destination.coordinate)
-            // Ignore a late result for a destination that is no longer selected.
-            guard routeTarget == destination else { return }
-            route = result
-            let rect = result.polyline.boundingMapRect
-            var region = MKCoordinateRegion(rect)
-            region.span.latitudeDelta *= 1.3
-            region.span.longitudeDelta *= 1.3
-            setRegion(region)
-        } catch {
-            guard routeTarget == destination else { return }
-            routeError = "Couldn't find a route. The destination is still shown on the map."
-        }
+        let result = await routeService.route(from: start, to: destination.coordinate)
+        // Ignore a late result for a destination that is no longer selected.
+        guard routeTarget == destination else { return }
+        route = result
+        var region = MKCoordinateRegion(result.polyline.boundingMapRect)
+        region.span.latitudeDelta = max(region.span.latitudeDelta * 1.4, 0.01)
+        region.span.longitudeDelta = max(region.span.longitudeDelta * 1.4, 0.01)
+        setRegion(region)
     }
 
     private func setRegion(_ region: MKCoordinateRegion) {
@@ -146,7 +138,6 @@ final class StudentHomeViewModel: ObservableObject {
     func clearRoute() {
         routeTarget = nil
         route = nil
-        routeError = nil
     }
 
     func clearDestination() {
