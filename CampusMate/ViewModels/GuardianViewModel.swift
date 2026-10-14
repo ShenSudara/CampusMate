@@ -17,6 +17,8 @@ final class GuardianViewModel: ObservableObject {
     private let tripService: TripService
     private let userService: UserService
     private let pingService: PingService
+    private let alertService: AlertService
+    private var missedCheckAttempts = Set<String>()
     private var pingListener: ListenerRegistration?
     private var uid: String?
     private var groups: [TrustedGroup] = []
@@ -32,11 +34,13 @@ final class GuardianViewModel: ObservableObject {
     init(groupService: GroupService = .shared,
          tripService: TripService = .shared,
          userService: UserService = .shared,
-         pingService: PingService = .shared) {
+         pingService: PingService = .shared,
+         alertService: AlertService = .shared) {
         self.groupService = groupService
         self.tripService = tripService
         self.userService = userService
         self.pingService = pingService
+        self.alertService = alertService
     }
 
     var selectedStudent: WatchedStudent? {
@@ -84,6 +88,7 @@ final class GuardianViewModel: ObservableObject {
                 switch result {
                 case .success(let pings):
                     self.pings = pings
+                    self.detectMissedCheckIns()
                 case .failure(let error):
                     self.errorMessage = AppError.userMessage(for: error)
                 }
@@ -92,7 +97,10 @@ final class GuardianViewModel: ObservableObject {
         // Refreshes "last updated" labels and the stale-signal check.
         clock = Timer.publish(every: 10, on: .main, in: .common)
             .autoconnect()
-            .sink { [weak self] date in self?.now = date }
+            .sink { [weak self] date in
+                self?.now = date
+                self?.detectMissedCheckIns()
+            }
     }
 
     func stop() {
@@ -149,6 +157,24 @@ final class GuardianViewModel: ObservableObject {
             try await pingService.sendPing(trip: trip, sender: sender)
         } catch {
             errorMessage = AppError.userMessage(for: error)
+        }
+    }
+
+    // Guardian-side check: a pending ping past its deadline becomes a missed check-in alert.
+    private func detectMissedCheckIns() {
+        guard let uid else { return }
+        for ping in pings where ping.studentId != uid && ping.isExpired() {
+            guard let pingId = ping.id, !missedCheckAttempts.contains(pingId) else { continue }
+            missedCheckAttempts.insert(pingId)
+            let trip = trips.first { $0.id == ping.tripId }
+            Task {
+                do {
+                    try await alertService.markPingMissed(ping, detectedBy: uid, trip: trip)
+                } catch {
+                    // Allow another try on the next tick, e.g. after a network error.
+                    missedCheckAttempts.remove(pingId)
+                }
+            }
         }
     }
 

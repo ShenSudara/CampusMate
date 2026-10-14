@@ -11,6 +11,8 @@ final class CheckInViewModel: ObservableObject {
     @Published var errorMessage: String?
 
     private let pingService: PingService
+    private let notificationService: NotificationService
+    private var notifiedPingIds = Set<String>()
     private var listener: ListenerRegistration?
     private var pings: [CheckInPing] = []
     private var dismissedIds = Set<String>()
@@ -19,8 +21,9 @@ final class CheckInViewModel: ObservableObject {
     // An unanswered ping keeps showing for this long after its deadline, e.g. if the app is reopened.
     private let expiredPromptLifetime: TimeInterval = 5 * 60
 
-    init(pingService: PingService = .shared) {
+    init(pingService: PingService = .shared, notificationService: NotificationService = .shared) {
         self.pingService = pingService
+        self.notificationService = notificationService
     }
 
     var secondsLeft: Int { activePing?.secondsLeft(at: now) ?? 0 }
@@ -84,6 +87,13 @@ final class CheckInViewModel: ObservableObject {
             return current.timeIntervalSince(ping.deadline) < expiredPromptLifetime
         }
         now = current
+        // Also notify, so the student is alerted when the app is in the background.
+        if let ping = activePing, let id = ping.id, !ping.isExpired(at: current), !notifiedPingIds.contains(id) {
+            notifiedPingIds.insert(id)
+            notificationService.notify(id: "ping-\(id)",
+                                       title: "👋 \(ping.senderName) is checking on you",
+                                       body: "Open CampusMate and tap I'm Fine within \(Formatters.countdown(ping.secondsLeft(at: current))) minutes.")
+        }
         if activePing == nil {
             clock = nil
         } else if clock == nil {

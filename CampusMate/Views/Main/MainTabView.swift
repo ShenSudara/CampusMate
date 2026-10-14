@@ -13,6 +13,7 @@ struct MainTabView: View {
     @StateObject private var guardianViewModel = GuardianViewModel()
     @StateObject private var historyViewModel = TripHistoryViewModel()
     @StateObject private var checkInViewModel = CheckInViewModel()
+    @StateObject private var alertsViewModel = AlertsViewModel()
     @State private var selectedTab: Tab = .home
 
     var body: some View {
@@ -57,7 +58,7 @@ struct MainTabView: View {
                     GroupListView(viewModel: groupsViewModel, session: session)
                         .tabItem { Label("Groups", systemImage: "person.3") }
                         .tag(Tab.groups)
-                    ProfileView(session: session, authViewModel: authViewModel)
+                    ProfileView(session: session, authViewModel: authViewModel, alertsViewModel: alertsViewModel)
                         .tabItem { Label("Profile", systemImage: "person.crop.circle") }
                         .tag(Tab.profile)
                 }
@@ -85,6 +86,7 @@ struct MainTabView: View {
             guardianViewModel.stop()
             historyViewModel.stop()
             checkInViewModel.stop()
+            alertsViewModel.stop()
             studentHomeViewModel.stopFollowingLocation()
         }
         .task {
@@ -94,6 +96,7 @@ struct MainTabView: View {
                 tripViewModel.start(uid: uid)
                 historyViewModel.start(uid: uid)
                 checkInViewModel.start(uid: uid)
+                alertsViewModel.start(uid: uid)
                 guardianViewModel.start(uid: uid, savedSelection: session.user?.selectedStudentId)
                 studentHomeViewModel.startFollowingLocation()
             }

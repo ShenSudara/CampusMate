@@ -3,6 +3,7 @@ import SwiftUI
 struct ProfileView: View {
     @ObservedObject var session: SessionViewModel
     @ObservedObject var authViewModel: AuthViewModel
+    @ObservedObject var alertsViewModel: AlertsViewModel
     @State private var editedName = ""
     @State private var isEditingName = false
 
@@ -34,6 +35,14 @@ struct ProfileView: View {
                     }
                 }
 
+                Section {
+                    notificationRow
+                } header: {
+                    Text("Notifications")
+                } footer: {
+                    Text("Guardians are notified about missed check-ins and possible emergencies. Students are notified when a guardian checks on them.")
+                }
+
                 if let errorMessage = session.errorMessage {
                     Section {
                         Text(errorMessage).foregroundColor(.red)
@@ -48,6 +57,7 @@ struct ProfileView: View {
                 }
             }
             .navigationTitle("Profile")
+            .task { await alertsViewModel.refreshNotificationStatus() }
             .alert("Edit Name", isPresented: $isEditingName) {
                 TextField("Full name", text: $editedName)
                 Button("Cancel", role: .cancel) {}
@@ -55,8 +65,34 @@ struct ProfileView: View {
             }
         }
     }
+
+    @ViewBuilder
+    private var notificationRow: some View {
+        switch alertsViewModel.notificationStatus {
+        case .authorized, .provisional, .ephemeral:
+            Label("On", systemImage: "bell.badge.fill")
+                .foregroundColor(.green)
+        case .denied:
+            VStack(alignment: .leading, spacing: 8) {
+                Label("Off", systemImage: "bell.slash.fill")
+                    .foregroundColor(.red)
+                Text("You won't hear about safety alerts. Turn notifications on in Settings.")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                Button("Open Settings") {
+                    if let url = URL(string: UIApplication.openSettingsURLString) {
+                        UIApplication.shared.open(url)
+                    }
+                }
+            }
+        default:
+            Button("Allow Notifications") {
+                Task { await alertsViewModel.requestNotificationPermission() }
+            }
+        }
+    }
 }
 
 #Preview {
-    ProfileView(session: SessionViewModel(), authViewModel: AuthViewModel())
+    ProfileView(session: SessionViewModel(), authViewModel: AuthViewModel(), alertsViewModel: AlertsViewModel())
 }
