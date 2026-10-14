@@ -2,7 +2,7 @@ import SwiftUI
 
 struct MainTabView: View {
     enum Tab {
-        case home, destination, history, groups, profile
+        case home, destination, history, alerts, groups, profile
     }
 
     @ObservedObject var authViewModel: AuthViewModel
@@ -41,6 +41,7 @@ struct MainTabView: View {
                              tripViewModel: tripViewModel,
                              groupsViewModel: groupsViewModel,
                              guardianViewModel: guardianViewModel,
+                             alertsViewModel: alertsViewModel,
                              onOpenDestination: { selectedTab = .destination })
                         .tabItem { Label("Home", systemImage: session.mode.systemImage) }
                         .tag(Tab.home)
@@ -55,6 +56,15 @@ struct MainTabView: View {
                     TripHistoryView(viewModel: historyViewModel, mode: session.mode)
                         .tabItem { Label("History", systemImage: "clock.arrow.circlepath") }
                         .tag(Tab.history)
+                    if session.mode == .guardian {
+                        NavigationStack {
+                            AlertsListView(viewModel: alertsViewModel, mode: .guardian)
+                        }
+                        .tabItem { Label("Alerts", systemImage: "bell.fill") }
+                        .badge(alertsViewModel.unseenCount)
+                        .tag(Tab.alerts)
+                        .onDisappear(perform: alertsViewModel.markAllSeen)
+                    }
                     GroupListView(viewModel: groupsViewModel, session: session)
                         .tabItem { Label("Groups", systemImage: "person.3") }
                         .tag(Tab.groups)
@@ -63,7 +73,8 @@ struct MainTabView: View {
                         .tag(Tab.profile)
                 }
                 .onChange(of: session.mode) { mode in
-                    if mode == .guardian && selectedTab == .destination {
+                    if (mode == .guardian && selectedTab == .destination)
+                        || (mode == .student && selectedTab == .alerts) {
                         selectedTab = .home
                     }
                 }

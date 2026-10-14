@@ -10,6 +10,7 @@ final class AlertsViewModel: ObservableObject {
     @Published private(set) var isLoading = true
     @Published private(set) var notificationStatus: UNAuthorizationStatus = .notDetermined
     @Published var errorMessage: String?
+    @Published private(set) var lastSeenAt: Date = .distantPast
 
     private let alertService: AlertService
     private let notificationService: NotificationService
@@ -19,6 +20,7 @@ final class AlertsViewModel: ObservableObject {
     // Alerts older than this are not notified, e.g. when the app opens after a long time.
     private let notifyWindow: TimeInterval = 30 * 60
     private let notifiedKey = "notifiedAlertIds"
+    private var lastSeenKey: String { "alertsLastSeenAt-\(uid ?? "")" }
 
     init(alertService: AlertService = .shared, notificationService: NotificationService = .shared) {
         self.alertService = alertService
@@ -27,9 +29,23 @@ final class AlertsViewModel: ObservableObject {
 
     var notificationsDenied: Bool { notificationStatus == .denied }
 
+    // Guardian view: alerts about other members.
+    var guardianAlerts: [SafetyAlert] { alerts.filter { $0.studentId != uid } }
+
+    // Student view: alerts the group received about this user.
+    var myAlerts: [SafetyAlert] { alerts.filter { $0.studentId == uid } }
+
+    var unseenCount: Int { guardianAlerts.filter { $0.createdAt > lastSeenAt }.count }
+
+    func markAllSeen() {
+        lastSeenAt = Date()
+        UserDefaults.standard.set(lastSeenAt, forKey: lastSeenKey)
+    }
+
     func start(uid: String) {
         guard listener == nil else { return }
         self.uid = uid
+        lastSeenAt = UserDefaults.standard.object(forKey: lastSeenKey) as? Date ?? .distantPast
         Task { await refreshNotificationStatus() }
         listener = alertService.listenToAlertsVisible(to: uid) { [weak self] result in
             Task { @MainActor in
