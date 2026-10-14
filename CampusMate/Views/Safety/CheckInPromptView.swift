@@ -37,8 +37,8 @@ struct CheckInPromptView: View {
                             style: StrokeStyle(lineWidth: 14, lineCap: .round))
                     .rotationEffect(.degrees(-90))
                     .animation(.linear(duration: 1), value: progress)
-                Text("\(secondsLeft)")
-                    .font(.system(size: 56, weight: .bold, design: .rounded).monospacedDigit())
+                Text(Formatters.countdown(secondsLeft))
+                    .font(.system(size: 52, weight: .bold, design: .rounded).monospacedDigit())
             }
             .frame(width: 180, height: 180)
             .accessibilityElement(children: .ignore)
@@ -82,6 +82,6 @@ struct CheckInPromptView: View {
 }
 
 #Preview {
-    CheckInPromptView(senderName: "Maya Perera", secondsLeft: 42, progress: 0.7, isExpired: false,
+    CheckInPromptView(senderName: "Maya Perera", secondsLeft: 245, progress: 0.8, isExpired: false,
                       isResponding: false, errorMessage: nil, onImFine: {}, onDismiss: {})
 }

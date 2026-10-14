@@ -56,7 +56,7 @@ struct CheckInPanel: View {
                 missedLabel(for: ping)
             } else {
                 Label {
-                    Text("Waiting for reply · ") + Text("0:\(String(format: "%02d", ping.secondsLeft(at: now)))").bold()
+                    Text("Waiting for reply · ") + Text(Formatters.countdown(ping.secondsLeft(at: now))).bold()
                 } icon: {
                     ProgressView()
                 }

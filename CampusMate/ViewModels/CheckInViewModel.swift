@@ -16,8 +16,8 @@ final class CheckInViewModel: ObservableObject {
     private var dismissedIds = Set<String>()
     private var clock: AnyCancellable?
 
-    // Unanswered pings older than this are not shown again, e.g. after reopening the app much later.
-    private let promptLifetime: TimeInterval = 5 * 60
+    // An unanswered ping keeps showing for this long after its deadline, e.g. if the app is reopened.
+    private let expiredPromptLifetime: TimeInterval = 5 * 60
 
     init(pingService: PingService = .shared) {
         self.pingService = pingService
@@ -81,7 +81,7 @@ final class CheckInViewModel: ObservableObject {
         let current = Date()
         activePing = pings.first { ping in
             guard let id = ping.id, !dismissedIds.contains(id), ping.status == .pending else { return false }
-            return current.timeIntervalSince(ping.sentAt) < promptLifetime
+            return current.timeIntervalSince(ping.deadline) < expiredPromptLifetime
         }
         now = current
         if activePing == nil {

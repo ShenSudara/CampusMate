@@ -22,6 +22,11 @@ enum Formatters {
         return durationFormatter.string(from: interval) ?? "-"
     }
 
+    // Countdown text such as "4:05".
+    static func countdown(_ seconds: Int) -> String {
+        String(format: "%d:%02d", seconds / 60, seconds % 60)
+    }
+
     static func distance(_ meters: CLLocationDistance) -> String {
         distanceFormatter.string(from: Measurement(value: meters, unit: UnitLength.meters))
     }
