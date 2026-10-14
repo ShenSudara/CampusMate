@@ -12,6 +12,7 @@ struct MainTabView: View {
     @StateObject private var tripViewModel = TripViewModel()
     @StateObject private var guardianViewModel = GuardianViewModel()
     @StateObject private var historyViewModel = TripHistoryViewModel()
+    @StateObject private var checkInViewModel = CheckInViewModel()
     @State private var selectedTab: Tab = .home
 
     var body: some View {
@@ -67,10 +68,23 @@ struct MainTabView: View {
                 }
             }
         }
+        .fullScreenCover(isPresented: Binding(get: { checkInViewModel.activePing != nil }, set: { _ in })) {
+            CheckInPromptView(
+                senderName: checkInViewModel.activePing?.senderName ?? "Your guardian",
+                secondsLeft: checkInViewModel.secondsLeft,
+                progress: checkInViewModel.progress,
+                isExpired: checkInViewModel.isExpired,
+                isResponding: checkInViewModel.isResponding,
+                errorMessage: checkInViewModel.errorMessage,
+                onImFine: { Task { await checkInViewModel.respondImFine() } },
+                onDismiss: checkInViewModel.dismissExpired
+            )
+        }
         .onDisappear {
             tripViewModel.stop()
             guardianViewModel.stop()
             historyViewModel.stop()
+            checkInViewModel.stop()
             studentHomeViewModel.stopFollowingLocation()
         }
         .task {
@@ -79,6 +93,7 @@ struct MainTabView: View {
                 groupsViewModel.start(uid: uid)
                 tripViewModel.start(uid: uid)
                 historyViewModel.start(uid: uid)
+                checkInViewModel.start(uid: uid)
                 guardianViewModel.start(uid: uid, savedSelection: session.user?.selectedStudentId)
                 studentHomeViewModel.startFollowingLocation()
             }

@@ -10,10 +10,14 @@ final class GuardianViewModel: ObservableObject {
     @Published private(set) var isLoading = true
     @Published private(set) var now = Date()
     @Published var errorMessage: String?
+    @Published private(set) var pings: [CheckInPing] = []
+    @Published private(set) var isSendingPing = false
 
     private let groupService: GroupService
     private let tripService: TripService
     private let userService: UserService
+    private let pingService: PingService
+    private var pingListener: ListenerRegistration?
     private var uid: String?
     private var groups: [TrustedGroup] = []
     private var trips: [Trip] = []
@@ -27,10 +31,12 @@ final class GuardianViewModel: ObservableObject {
 
     init(groupService: GroupService = .shared,
          tripService: TripService = .shared,
-         userService: UserService = .shared) {
+         userService: UserService = .shared,
+         pingService: PingService = .shared) {
         self.groupService = groupService
         self.tripService = tripService
         self.userService = userService
+        self.pingService = pingService
     }
 
     var selectedStudent: WatchedStudent? {
@@ -72,6 +78,17 @@ final class GuardianViewModel: ObservableObject {
                 self.rebuildStudents()
             }
         }
+        pingListener = pingService.listenToPingsVisible(to: uid) { [weak self] result in
+            Task { @MainActor in
+                guard let self else { return }
+                switch result {
+                case .success(let pings):
+                    self.pings = pings
+                case .failure(let error):
+                    self.errorMessage = AppError.userMessage(for: error)
+                }
+            }
+        }
         // Refreshes "last updated" labels and the stale-signal check.
         clock = Timer.publish(every: 10, on: .main, in: .common)
             .autoconnect()
@@ -82,6 +99,9 @@ final class GuardianViewModel: ObservableObject {
         groupListener?.remove()
         tripListener?.remove()
         pathListener?.remove()
+        pingListener?.remove()
+        pingListener = nil
+        pings = []
         groupListener = nil
         tripListener = nil
         pathListener = nil
@@ -103,6 +123,32 @@ final class GuardianViewModel: ObservableObject {
             } catch {
                 errorMessage = AppError.userMessage(for: error)
             }
+        }
+    }
+
+    // The newest check-in for the selected student's current journey, from any guardian.
+    var latestPingForSelectedTrip: CheckInPing? {
+        guard let tripId = selectedTrip?.id else { return nil }
+        return pings.first { $0.tripId == tripId }
+    }
+
+    var canSendPing: Bool {
+        guard selectedTrip != nil, !isSendingPing else { return false }
+        if let ping = latestPingForSelectedTrip, ping.status == .pending, !ping.isExpired() {
+            return false
+        }
+        return true
+    }
+
+    func sendCheckIn(from sender: AppUser?) async {
+        guard let sender, let trip = selectedTrip, canSendPing else { return }
+        isSendingPing = true
+        errorMessage = nil
+        defer { isSendingPing = false }
+        do {
+            try await pingService.sendPing(trip: trip, sender: sender)
+        } catch {
+            errorMessage = AppError.userMessage(for: error)
         }
     }
 

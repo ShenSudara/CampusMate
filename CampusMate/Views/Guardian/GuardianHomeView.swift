@@ -2,6 +2,7 @@ import SwiftUI
 
 struct GuardianHomeView: View {
     @ObservedObject var viewModel: GuardianViewModel
+    let currentUser: AppUser?
 
     var body: some View {
         if viewModel.isLoading {
@@ -54,8 +55,19 @@ struct GuardianHomeView: View {
                 Spacer()
 
                 if let student = viewModel.selectedStudent {
-                    TripStatusCard(student: student, isStale: stale)
-                        .padding()
+                    VStack(spacing: 8) {
+                        TripStatusCard(student: student, isStale: stale)
+                        if student.isTravelling {
+                            CheckInPanel(
+                                studentName: student.displayName,
+                                latestPing: viewModel.latestPingForSelectedTrip,
+                                canSend: viewModel.canSendPing,
+                                isSending: viewModel.isSendingPing,
+                                onSend: { Task { await viewModel.sendCheckIn(from: currentUser) } }
+                            )
+                        }
+                    }
+                    .padding()
                 }
             }
         }
@@ -63,5 +75,5 @@ struct GuardianHomeView: View {
 }
 
 #Preview {
-    GuardianHomeView(viewModel: GuardianViewModel())
+    GuardianHomeView(viewModel: GuardianViewModel(), currentUser: nil)
 }

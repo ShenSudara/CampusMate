@@ -19,7 +19,7 @@ struct HomeView: View {
                                     groupsViewModel: groupsViewModel,
                                     onOpenDestination: onOpenDestination)
                 case .guardian:
-                    GuardianHomeView(viewModel: guardianViewModel)
+                    GuardianHomeView(viewModel: guardianViewModel, currentUser: session.user)
                         .navigationBarTitleDisplayMode(.inline)
                 }
             }
