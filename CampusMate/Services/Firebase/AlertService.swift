@@ -24,8 +24,22 @@ final class AlertService {
             }
     }
 
+    // Waits for the server to confirm, so the student knows the alert really went out.
     func createAlert(_ alert: SafetyAlert) async throws {
-        try alerts.document().setData(from: alert)
+        let ref = alerts.document()
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            do {
+                try ref.setData(from: alert) { error in
+                    if let error {
+                        continuation.resume(throwing: error)
+                    } else {
+                        continuation.resume()
+                    }
+                }
+            } catch {
+                continuation.resume(throwing: error)
+            }
+        }
     }
 
     // Marks an unanswered ping as missed and raises one alert for it. Several guardians may

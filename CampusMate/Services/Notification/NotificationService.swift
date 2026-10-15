@@ -1,5 +1,6 @@
 import Foundation
 import UserNotifications
+import AudioToolbox
 
 final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
     static let shared = NotificationService()
@@ -27,6 +28,11 @@ final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
         content.body = body
         content.sound = .default
         center.add(UNNotificationRequest(identifier: id, content: content, trigger: nil))
+    }
+
+    // Works while the app runs in the background during a journey, unlike haptic feedback.
+    func vibrate() {
+        AudioServicesPlaySystemSound(kSystemSoundID_Vibrate)
     }
 
     func userNotificationCenter(_ center: UNUserNotificationCenter,

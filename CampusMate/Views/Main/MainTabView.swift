@@ -14,6 +14,7 @@ struct MainTabView: View {
     @StateObject private var historyViewModel = TripHistoryViewModel()
     @StateObject private var checkInViewModel = CheckInViewModel()
     @StateObject private var alertsViewModel = AlertsViewModel()
+    @StateObject private var safetyMonitor = SafetyMonitorViewModel()
     @State private var selectedTab: Tab = .home
 
     var body: some View {
@@ -80,6 +81,22 @@ struct MainTabView: View {
                 }
             }
         }
+        .fullScreenCover(isPresented: Binding(get: { safetyMonitor.prompt != nil }, set: { _ in })) {
+            AreYouOKView(
+                reason: safetyMonitor.prompt?.reason ?? "",
+                secondsLeft: safetyMonitor.secondsLeft,
+                progress: safetyMonitor.progress,
+                isSending: safetyMonitor.isSending,
+                alertSent: safetyMonitor.alertSent,
+                errorMessage: safetyMonitor.errorMessage,
+                onImOK: safetyMonitor.confirmOK,
+                onSendNow: { Task { await safetyMonitor.sendAlertNow() } },
+                onClose: safetyMonitor.dismissSent
+            )
+        }
+        .onChange(of: tripViewModel.activeTrip?.id) { _ in
+            safetyMonitor.update(trip: tripViewModel.activeTrip)
+        }
         .fullScreenCover(isPresented: Binding(get: { checkInViewModel.activePing != nil }, set: { _ in })) {
             CheckInPromptView(
                 senderName: checkInViewModel.activePing?.senderName ?? "Your guardian",
@@ -98,6 +115,7 @@ struct MainTabView: View {
             historyViewModel.stop()
             checkInViewModel.stop()
             alertsViewModel.stop()
+            safetyMonitor.stop()
             studentHomeViewModel.stopFollowingLocation()
         }
         .task {
@@ -108,6 +126,7 @@ struct MainTabView: View {
                 historyViewModel.start(uid: uid)
                 checkInViewModel.start(uid: uid)
                 alertsViewModel.start(uid: uid)
+                safetyMonitor.update(trip: tripViewModel.activeTrip)
                 guardianViewModel.start(uid: uid, savedSelection: session.user?.selectedStudentId)
                 studentHomeViewModel.startFollowingLocation()
             }
