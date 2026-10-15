@@ -5,18 +5,24 @@ import CoreLocation
 enum AlertType: String, Codable {
     case missedCheckIn
     case motionDetected
+    case sos
 
     var title: String {
         switch self {
         case .missedCheckIn: return "Missed check-in"
         case .motionDetected: return "Possible emergency"
+        case .sos: return "SOS"
         }
     }
+
+    // SOS and possible emergencies are shown in red, missed check-ins in orange.
+    var isCritical: Bool { self != .missedCheckIn }
 
     var systemImage: String {
         switch self {
         case .missedCheckIn: return "bell.slash.fill"
         case .motionDetected: return "waveform.path.ecg"
+        case .sos: return "sos"
         }
     }
 }

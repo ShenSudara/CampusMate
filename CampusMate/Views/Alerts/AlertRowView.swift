@@ -10,7 +10,7 @@ struct AlertRowView: View {
                 .font(.title3)
                 .foregroundColor(.white)
                 .frame(width: 40, height: 40)
-                .background(alert.type == .motionDetected ? Color.red : Color.orange)
+                .background(alert.type.isCritical ? Color.red : Color.orange)
                 .clipShape(Circle())
             VStack(alignment: .leading, spacing: 3) {
                 HStack {

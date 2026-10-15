@@ -7,6 +7,7 @@ struct HomeView: View {
     @ObservedObject var groupsViewModel: GroupsViewModel
     @ObservedObject var guardianViewModel: GuardianViewModel
     @ObservedObject var alertsViewModel: AlertsViewModel
+    @ObservedObject var sosViewModel: SOSViewModel
     @State private var isShowingMyAlerts = false
     let onOpenDestination: () -> Void
 
@@ -19,6 +20,7 @@ struct HomeView: View {
                                     viewModel: studentHomeViewModel,
                                     tripViewModel: tripViewModel,
                                     groupsViewModel: groupsViewModel,
+                                    sosViewModel: sosViewModel,
                                     onOpenDestination: onOpenDestination)
                 case .guardian:
                     GuardianHomeView(viewModel: guardianViewModel, currentUser: session.user)
@@ -57,5 +59,6 @@ struct HomeView: View {
              groupsViewModel: GroupsViewModel(),
              guardianViewModel: GuardianViewModel(),
              alertsViewModel: AlertsViewModel(),
+             sosViewModel: SOSViewModel(),
              onOpenDestination: {})
 }

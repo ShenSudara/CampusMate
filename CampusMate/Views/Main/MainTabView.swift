@@ -15,6 +15,7 @@ struct MainTabView: View {
     @StateObject private var checkInViewModel = CheckInViewModel()
     @StateObject private var alertsViewModel = AlertsViewModel()
     @StateObject private var safetyMonitor = SafetyMonitorViewModel()
+    @StateObject private var sosViewModel = SOSViewModel()
     @State private var selectedTab: Tab = .home
 
     var body: some View {
@@ -43,6 +44,7 @@ struct MainTabView: View {
                              groupsViewModel: groupsViewModel,
                              guardianViewModel: guardianViewModel,
                              alertsViewModel: alertsViewModel,
+                             sosViewModel: sosViewModel,
                              onOpenDestination: { selectedTab = .destination })
                         .tabItem { Label("Home", systemImage: session.mode.systemImage) }
                         .tag(Tab.home)
@@ -50,7 +52,8 @@ struct MainTabView: View {
                         DestinationMapView(viewModel: studentHomeViewModel,
                                            tripViewModel: tripViewModel,
                                            groupsViewModel: groupsViewModel,
-                                           session: session)
+                                           session: session,
+                                           sosViewModel: sosViewModel)
                             .tabItem { Label("Destination", systemImage: "map") }
                             .tag(Tab.destination)
                     }
@@ -96,6 +99,7 @@ struct MainTabView: View {
         }
         .onChange(of: tripViewModel.activeTrip?.id) { _ in
             safetyMonitor.update(trip: tripViewModel.activeTrip)
+            sosViewModel.reset()
         }
         .fullScreenCover(isPresented: Binding(get: { checkInViewModel.activePing != nil }, set: { _ in })) {
             CheckInPromptView(

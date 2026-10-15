@@ -5,6 +5,7 @@ struct StudentHomeView: View {
     @ObservedObject var viewModel: StudentHomeViewModel
     @ObservedObject var tripViewModel: TripViewModel
     @ObservedObject var groupsViewModel: GroupsViewModel
+    @ObservedObject var sosViewModel: SOSViewModel
     let onOpenDestination: () -> Void
 
     var body: some View {
@@ -28,6 +29,7 @@ struct StudentHomeView: View {
                     ProgressView()
                         .frame(maxWidth: .infinity)
                 } else if let trip = tripViewModel.activeTrip {
+                    sosButton(for: trip)
                     ActiveTripCard(trip: trip,
                                    userCoordinate: viewModel.userCoordinate,
                                    lastSharedAt: tripViewModel.lastSharedAt,
@@ -84,6 +86,14 @@ struct StudentHomeView: View {
         }
     }
 
+
+    private func sosButton(for trip: Trip) -> some View {
+        SOSButton(isSending: sosViewModel.isSending,
+                  lastSentAt: sosViewModel.lastSentAt,
+                  secondsUntilAvailable: sosViewModel.secondsUntilAvailable,
+                  errorMessage: sosViewModel.errorMessage,
+                  onSend: { Task { await sosViewModel.send(for: trip) } })
+    }
 }
 
 #Preview {
@@ -92,6 +102,7 @@ struct StudentHomeView: View {
                         viewModel: StudentHomeViewModel(),
                         tripViewModel: TripViewModel(),
                         groupsViewModel: GroupsViewModel(),
+                        sosViewModel: SOSViewModel(),
                         onOpenDestination: {})
             .navigationTitle("Student")
     }

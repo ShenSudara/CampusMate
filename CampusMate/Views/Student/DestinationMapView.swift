@@ -6,6 +6,7 @@ struct DestinationMapView: View {
     @ObservedObject var tripViewModel: TripViewModel
     @ObservedObject var groupsViewModel: GroupsViewModel
     @ObservedObject var session: SessionViewModel
+    @ObservedObject var sosViewModel: SOSViewModel
     @FocusState private var isSearchFocused: Bool
     @State private var confirmCancel = false
 
@@ -308,6 +309,11 @@ struct DestinationMapView: View {
         VStack(spacing: 14) {
             destinationRow(for: trip.destination, removable: false)
             routeSummary
+            SOSButton(isSending: sosViewModel.isSending,
+                      lastSentAt: sosViewModel.lastSentAt,
+                      secondsUntilAvailable: sosViewModel.secondsUntilAvailable,
+                      errorMessage: sosViewModel.errorMessage,
+                      onSend: { Task { await sosViewModel.send(for: trip) } })
             Button(role: .destructive) {
                 confirmCancel = true
             } label: {
@@ -336,5 +342,6 @@ struct DestinationMapView: View {
     DestinationMapView(viewModel: StudentHomeViewModel(),
                        tripViewModel: TripViewModel(),
                        groupsViewModel: GroupsViewModel(),
-                       session: SessionViewModel())
+                       session: SessionViewModel(),
+                       sosViewModel: SOSViewModel())
 }

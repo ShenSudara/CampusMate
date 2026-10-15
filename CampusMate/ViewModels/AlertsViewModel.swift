@@ -91,7 +91,7 @@ final class AlertsViewModel: ObservableObject {
             guard let id = alert.id, !notified.contains(id) else { continue }
             notified.insert(id)
             notificationService.notify(id: "alert-\(id)",
-                                       title: "⚠️ \(alert.type.title): \(alert.studentName)",
+                                       title: "\(alert.type == .sos ? "🆘" : "⚠️") \(alert.type.title): \(alert.studentName)",
                                        body: alert.message)
         }
         // Keep the stored list small; only recent alerts can be notified anyway.

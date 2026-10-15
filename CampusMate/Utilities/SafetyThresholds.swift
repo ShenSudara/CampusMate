@@ -20,4 +20,9 @@ enum SafetyThresholds {
     static let motionResponseWindow: TimeInterval = 30
     // After a detection, ignore new ones for this long so one event can't trigger repeatedly.
     static let motionCooldown: TimeInterval = 60
+
+    // How long the SOS button must be held before the alert is sent.
+    static let sosHoldDuration: TimeInterval = 1.5
+    // Wait this long before another SOS can be sent, so a repeated press doesn't spam the group.
+    static let sosResendDelay: TimeInterval = 30
 }
