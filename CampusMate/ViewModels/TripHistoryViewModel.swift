@@ -19,11 +19,15 @@ final class TripHistoryViewModel: ObservableObject {
     @Published private(set) var deletingTripIds = Set<String>()
 
     private let tripService: TripService
+    private let notificationService: NotificationService
+    private var uid: String?
+    private let notifiedKey = "notifiedArrivalIds"
     private var myListener: ListenerRegistration?
     private var sharedListener: ListenerRegistration?
 
-    init(tripService: TripService = .shared) {
+    init(tripService: TripService = .shared, notificationService: NotificationService = .shared) {
         self.tripService = tripService
+        self.notificationService = notificationService
     }
 
     // Student mode: the user's own finished journeys.
@@ -48,6 +52,7 @@ final class TripHistoryViewModel: ObservableObject {
 
     func start(uid: String) {
         guard myListener == nil else { return }
+        self.uid = uid
         myListener = tripService.listenToTrips(studentId: uid) { [weak self] result in
             Task { @MainActor in
                 guard let self else { return }
@@ -59,6 +64,7 @@ final class TripHistoryViewModel: ObservableObject {
             Task { @MainActor in
                 guard let self else { return }
                 self.handle(result) { self.sharedTrips = $0 }
+                self.notifyArrivals()
                 self.isLoadingShared = false
             }
         }
@@ -86,6 +92,25 @@ final class TripHistoryViewModel: ObservableObject {
         } catch {
             errorMessage = AppError.userMessage(for: error)
         }
+    }
+
+    // Tells guardians when a student they follow ends a journey by arriving safely.
+    private func notifyArrivals() {
+        var notified = Set(UserDefaults.standard.stringArray(forKey: notifiedKey) ?? [])
+        let cutoff = Date().addingTimeInterval(-LocationSharingSettings.arrivalNotifyWindow)
+        let recentArrivals = sharedTrips.filter {
+            $0.didArriveSafely && $0.studentId != uid && ($0.endedAt ?? .distantPast) > cutoff
+        }
+        for trip in recentArrivals {
+            guard let id = trip.id, !notified.contains(id) else { continue }
+            notified.insert(id)
+            notificationService.notify(id: "arrival-\(id)",
+                                       title: "✅ \(trip.studentName) arrived safely",
+                                       body: "\(trip.studentName) reached \(trip.destination.name) and ended the journey.")
+        }
+        // Keep the stored list small; older arrivals are never notified anyway.
+        let recentIds = Set(recentArrivals.compactMap(\.id))
+        UserDefaults.standard.set(Array(notified.intersection(recentIds)), forKey: notifiedKey)
     }
 
     private func handle(_ result: Result<[Trip], Error>, apply: ([Trip]) -> Void) {

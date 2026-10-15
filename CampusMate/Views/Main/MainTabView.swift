@@ -97,6 +97,13 @@ struct MainTabView: View {
                 onClose: safetyMonitor.dismissSent
             )
         }
+        .alert("You've arrived",
+               isPresented: Binding(get: { tripViewModel.arrivedAt != nil }, set: { _ in })) {
+            Button("End Journey") { Task { await tripViewModel.confirmArrival() } }
+            Button("Not Yet", role: .cancel, action: tripViewModel.declineArrival)
+        } message: {
+            Text("You're at \(tripViewModel.arrivedAt?.name ?? "your destination"). End your journey and let your group know you arrived safely?")
+        }
         .onChange(of: tripViewModel.activeTrip?.id) { _ in
             safetyMonitor.update(trip: tripViewModel.activeTrip)
             sosViewModel.reset()

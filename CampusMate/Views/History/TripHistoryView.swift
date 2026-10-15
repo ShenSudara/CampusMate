@@ -134,6 +134,11 @@ struct TripHistoryRow: View {
                 Text(trip.startedAt.formatted(date: .abbreviated, time: .shortened))
                     .font(.subheadline)
                     .foregroundColor(.secondary)
+                if trip.didArriveSafely {
+                    Label("Arrived safely", systemImage: "checkmark.seal.fill")
+                        .font(.caption.bold())
+                        .foregroundColor(.green)
+                }
             }
             Spacer()
             if let duration = trip.duration {

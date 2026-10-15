@@ -22,6 +22,10 @@ struct Trip: Codable, Identifiable, Equatable {
     var lastLongitude: Double?
     var lastLocationAt: Date?
     var lastSpeed: Double?
+    // Set when the student ends the journey by confirming they reached the destination.
+    var arrivedSafely: Bool?
+
+    var didArriveSafely: Bool { arrivedSafely == true }
 
     var duration: TimeInterval? {
         guard let endedAt else { return nil }

@@ -3,6 +3,12 @@ import CoreLocation
 
 // Tuning values for live location sharing during a journey.
 enum LocationSharingSettings {
+    // The student is asked "Have you arrived?" within this distance of the destination.
+    static let arrivalRadius: CLLocationDistance = 100
+    // After "Not Yet", the question comes back only once the student has moved this far away and returned.
+    static let arrivalResetDistance: CLLocationDistance = 250
+    // Guardians are notified about arrivals that happened within this time.
+    static let arrivalNotifyWindow: TimeInterval = 30 * 60
     // Upload at least this often while the student is moving or standing still.
     static let maximumUploadInterval: TimeInterval = 15
     // Upload sooner than the interval once the student has moved this far.

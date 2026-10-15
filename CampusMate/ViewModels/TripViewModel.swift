@@ -12,19 +12,27 @@ final class TripViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published private(set) var lastSharedAt: Date?
     @Published private(set) var sharingError: String?
+    // The destination the student has just reached, while asking whether to end the journey.
+    @Published private(set) var arrivedAt: Destination?
 
     private let tripService: TripService
     private let locationService: LocationService
     private let liveLocationService: LiveLocationService
+    private let notificationService: NotificationService
+    private var arrivalObserver: UUID?
+    private var arrivalTripId: String?
+    private var arrivalDeclined = false
     private var tripListener: ListenerRegistration?
     private var authorizationObserver: UUID?
 
     init(tripService: TripService = .shared,
          locationService: LocationService = .shared,
-         liveLocationService: LiveLocationService = .shared) {
+         liveLocationService: LiveLocationService = .shared,
+         notificationService: NotificationService = .shared) {
         self.tripService = tripService
         self.locationService = locationService
         self.liveLocationService = liveLocationService
+        self.notificationService = notificationService
         liveLocationService.onUpload = { [weak self] date in
             Task { @MainActor in
                 self?.lastSharedAt = date
@@ -65,6 +73,7 @@ final class TripViewModel: ObservableObject {
                 case .success(let trip):
                     self.activeTrip = trip
                     self.updateSharing()
+                    self.updateArrivalWatch()
                 case .failure(let error):
                     self.errorMessage = AppError.userMessage(for: error)
                 }
@@ -84,7 +93,61 @@ final class TripViewModel: ObservableObject {
         }
     }
 
+    private func updateArrivalWatch() {
+        guard let trip = activeTrip, let tripId = trip.id else {
+            removeArrivalObserver()
+            arrivedAt = nil
+            arrivalTripId = nil
+            return
+        }
+        if arrivalTripId != tripId {
+            arrivalTripId = tripId
+            arrivalDeclined = false
+            arrivedAt = nil
+        }
+        guard arrivalObserver == nil else { return }
+        arrivalObserver = locationService.observeLocation { [weak self] location in
+            Task { @MainActor in self?.checkArrival(at: location) }
+        }
+    }
+
+    private func checkArrival(at location: CLLocation) {
+        guard let trip = activeTrip, arrivedAt == nil, !isWorking else { return }
+        let destination = CLLocation(latitude: trip.destination.latitude, longitude: trip.destination.longitude)
+        let distance = location.distance(from: destination)
+        if distance > LocationSharingSettings.arrivalResetDistance {
+            arrivalDeclined = false
+        } else if distance <= LocationSharingSettings.arrivalRadius && !arrivalDeclined {
+            arrivedAt = trip.destination
+            notificationService.notify(id: "arrived-\(trip.id ?? "")",
+                                       title: "You've arrived at \(trip.destination.name)",
+                                       body: "Open CampusMate to end your journey and let your group know you're safe.")
+        }
+    }
+
+    private func removeArrivalObserver() {
+        if let arrivalObserver {
+            locationService.removeObserver(arrivalObserver)
+        }
+        arrivalObserver = nil
+    }
+
+    func confirmArrival() async {
+        await endTrip(arrivedSafely: true)
+        if errorMessage == nil {
+            arrivedAt = nil
+        }
+    }
+
+    func declineArrival() {
+        arrivalDeclined = true
+        arrivedAt = nil
+    }
+
     func stop() {
+        removeArrivalObserver()
+        arrivedAt = nil
+        arrivalTripId = nil
         liveLocationService.stopSharing()
         tripListener?.remove()
         tripListener = nil
@@ -141,13 +204,13 @@ final class TripViewModel: ObservableObject {
         }
     }
 
-    func endTrip() async {
+    func endTrip(arrivedSafely: Bool = false) async {
         guard let trip = activeTrip, let tripId = trip.id else { return }
         isWorking = true
         errorMessage = nil
         defer { isWorking = false }
         do {
-            try await tripService.endTrip(tripId: tripId, studentId: trip.studentId)
+            try await tripService.endTrip(tripId: tripId, studentId: trip.studentId, arrivedSafely: arrivedSafely)
         } catch {
             errorMessage = AppError.userMessage(for: error)
         }

@@ -156,11 +156,12 @@ final class TripService {
         batch.commit(completion: completion)
     }
 
-    func endTrip(tripId: String, studentId: String) async throws {
+    func endTrip(tripId: String, studentId: String, arrivedSafely: Bool = false) async throws {
         let batch = db.batch()
         batch.updateData([
             "status": TripStatus.completed.rawValue,
-            "endedAt": FieldValue.serverTimestamp()
+            "endedAt": FieldValue.serverTimestamp(),
+            "arrivedSafely": arrivedSafely
         ], forDocument: trips.document(tripId))
         batch.updateData(["activeTripId": FieldValue.delete()], forDocument: db.collection("users").document(studentId))
         try await batch.commit()
