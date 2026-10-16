@@ -81,6 +81,8 @@ struct CheckInPromptView: View {
         .padding(24)
         .background(Color(.systemBackground).ignoresSafeArea())
         .interactiveDismissDisabled()
+        // The countdown and button must stay on screen, so very large text sizes are capped.
+        .dynamicTypeSize(...DynamicTypeSize.accessibility2)
     }
 }
 
