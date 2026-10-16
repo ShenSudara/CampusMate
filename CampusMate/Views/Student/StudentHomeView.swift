@@ -29,6 +29,9 @@ struct StudentHomeView: View {
                     ProgressView("Checking for an active journey…")
                         .frame(maxWidth: .infinity)
                 } else if let trip = tripViewModel.activeTrip {
+                    if !tripViewModel.hasAlwaysPermission && !tripViewModel.isLocationDenied {
+                        backgroundSharingNotice
+                    }
                     sosButton(for: trip)
                     ActiveTripCard(trip: trip,
                                    userCoordinate: viewModel.userCoordinate,
@@ -90,6 +93,27 @@ struct StudentHomeView: View {
         }
     }
 
+    // Without "Always" access, sharing pauses when the phone is locked or the app is closed.
+    private var backgroundSharingNotice: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Label("Sharing stops when your phone is locked", systemImage: "lock.trianglebadge.exclamationmark")
+                .font(.subheadline.bold())
+                .foregroundColor(.orange)
+            Text("Set CampusMate's location access to \"Always\" so your group can still follow you with the screen off.")
+                .font(.caption)
+                .foregroundColor(.secondary)
+            Button("Open Settings") {
+                if let url = URL(string: UIApplication.openSettingsURLString) {
+                    UIApplication.shared.open(url)
+                }
+            }
+            .font(.caption.bold())
+        }
+        .padding()
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color(.secondarySystemGroupedBackground))
+        .cornerRadius(16)
+    }
 
     private func sosButton(for trip: Trip) -> some View {
         SOSButton(isSending: sosViewModel.isSending,
