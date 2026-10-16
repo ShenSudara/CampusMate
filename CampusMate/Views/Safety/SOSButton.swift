@@ -31,9 +31,12 @@ struct SOSButton: View {
                     Label(isPressing ? "Keep holding…" : "Hold for SOS", systemImage: "sos")
                         .font(.headline)
                         .foregroundColor(.white)
+                        .multilineTextAlignment(.center)
+                        .padding(.vertical, 12)
                 }
             }
-            .frame(height: 54)
+            .frame(minHeight: 54)
+            .fixedSize(horizontal: false, vertical: true)
             .contentShape(Rectangle())
             .onLongPressGesture(minimumDuration: SafetyThresholds.sosHoldDuration,
                                 perform: {
