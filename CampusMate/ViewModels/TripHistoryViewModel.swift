@@ -105,7 +105,7 @@ final class TripHistoryViewModel: ObservableObject {
             guard let id = trip.id, !notified.contains(id) else { continue }
             notified.insert(id)
             notificationService.notify(id: "arrival-\(id)",
-                                       title: "✅ \(trip.studentName) arrived safely",
+                                       title: "\(trip.studentName) arrived safely",
                                        body: "\(trip.studentName) reached \(trip.destination.name) and ended the journey.")
         }
         // Keep the stored list small; older arrivals are never notified anyway.

@@ -94,7 +94,7 @@ final class CheckInViewModel: ObservableObject {
         if let ping = activePing, let id = ping.id, !ping.isExpired(at: current), !notifiedPingIds.contains(id) {
             notifiedPingIds.insert(id)
             notificationService.notify(id: "ping-\(id)",
-                                       title: "👋 \(ping.senderName) is checking on you",
+                                       title: "\(ping.senderName) is checking on you",
                                        body: "Open CampusMate and tap I'm Fine within \(Formatters.countdown(ping.secondsLeft(at: current))) minutes.")
         }
         if activePing == nil {
