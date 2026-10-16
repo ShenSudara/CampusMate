@@ -11,6 +11,7 @@ struct VerifyEmailView: View {
                     .font(.system(size: 64))
                     .foregroundColor(.accentColor)
                     .padding(.top, 48)
+                    .accessibilityHidden(true)
                 Text("Verify your email")
                     .font(.title.bold())
                 Text("We sent a verification link to \(email). Open it, then come back and tap \"I've Verified\".")
@@ -33,6 +34,7 @@ struct VerifyEmailView: View {
                         .font(.footnote)
                         .foregroundColor(.red)
                         .multilineTextAlignment(.center)
+                        .accessibilityLabel("Error: \(errorMessage)")
                 }
 
                 Button {
@@ -48,6 +50,7 @@ struct VerifyEmailView: View {
                     .frame(maxWidth: .infinity)
                     .padding()
                 }
+                .accessibilityLabel(viewModel.isLoading ? "Checking verification" : "I've Verified")
                 .background(Color.accentColor)
                 .foregroundColor(.white)
                 .cornerRadius(12)
