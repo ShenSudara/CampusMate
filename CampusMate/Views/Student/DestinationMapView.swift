@@ -28,6 +28,9 @@ struct DestinationMapView: View {
                 onTap: { isSearchFocused = false }
             )
             .ignoresSafeArea(edges: .top)
+            .accessibilityElement()
+            .accessibilityLabel(mapDestination.map { "Map showing your location and \($0.name)" }
+                                ?? "Map showing your location")
 
             VStack(spacing: 8) {
                 if activeTrip == nil {
