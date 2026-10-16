@@ -67,6 +67,7 @@ struct StudentHomeView: View {
                     Image(systemName: "magnifyingglass.circle.fill")
                         .font(.largeTitle)
                         .foregroundColor(.accentColor)
+                        .accessibilityHidden(true)
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Set Destination")
                             .font(.headline)
@@ -78,11 +79,14 @@ struct StudentHomeView: View {
                     Spacer()
                     Image(systemName: "chevron.right")
                         .foregroundColor(.secondary)
+                        .accessibilityHidden(true)
                 }
                 .padding()
                 .background(Color(.secondarySystemGroupedBackground))
                 .cornerRadius(16)
             }
+            .accessibilityElement(children: .combine)
+            .accessibilityHint("Opens the Destination tab")
         }
     }
 
