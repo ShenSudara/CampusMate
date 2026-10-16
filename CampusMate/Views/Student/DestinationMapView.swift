@@ -76,6 +76,8 @@ struct DestinationMapView: View {
                         activeTripPanel(for: trip)
                     } else if let destination = viewModel.destination {
                         selectedPanel(for: destination)
+                    } else if !isSearchFocused {
+                        noDestinationHint
                     }
                 }
             }
@@ -101,6 +103,33 @@ struct DestinationMapView: View {
         } message: {
             Text("Location sharing will stop and your group will see the journey as finished.")
         }
+    }
+
+    private var noDestinationHint: some View {
+        Button {
+            isSearchFocused = true
+        } label: {
+            HStack(spacing: 12) {
+                Image(systemName: "magnifyingglass.circle.fill")
+                    .font(.title)
+                    .foregroundColor(.accentColor)
+                    .accessibilityHidden(true)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Where are you heading?")
+                        .font(.headline)
+                        .foregroundColor(.primary)
+                    Text("Search for a destination to start your journey.")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+                Spacer()
+            }
+            .padding()
+            .background(.regularMaterial)
+            .cornerRadius(16)
+            .shadow(color: .black.opacity(0.1), radius: 6, y: 2)
+        }
+        .accessibilityHint("Starts a search")
     }
 
     private func refreshRoute() {
