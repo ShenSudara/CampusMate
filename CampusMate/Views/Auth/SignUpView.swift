@@ -48,6 +48,7 @@ struct SignUpView: View {
                     Text("Passwords do not match.")
                         .font(.footnote)
                         .foregroundColor(.red)
+                        .accessibilityLabel("Error: passwords do not match")
                 }
 
                 if let errorMessage {
@@ -55,6 +56,7 @@ struct SignUpView: View {
                         .font(.footnote)
                         .foregroundColor(.red)
                         .multilineTextAlignment(.center)
+                        .accessibilityLabel("Error: \(errorMessage)")
                 }
 
                 Button(action: onSignUp) {
@@ -68,6 +70,7 @@ struct SignUpView: View {
                     .frame(maxWidth: .infinity)
                     .padding()
                 }
+                .accessibilityLabel(isLoading ? "Creating account" : "Sign Up")
                 .background(canSubmit ? Color.accentColor : Color(.tertiarySystemFill))
                 .foregroundColor(canSubmit ? .white : .secondary)
                 .cornerRadius(12)
