@@ -8,6 +8,9 @@ struct SignInView: View {
     let onSignIn: () -> Void
     let onShowSignUp: () -> Void
 
+    private enum Field { case email, password }
+    @FocusState private var focusedField: Field?
+
     private var canSubmit: Bool {
         InputValidator.isValidEmail(email) && InputValidator.isValidPassword(password) && !isLoading
     }
@@ -29,9 +32,16 @@ struct SignInView: View {
 
                 VStack(spacing: 12) {
                     AuthTextField(title: "Email", systemImage: "envelope", text: $email,
-                                  keyboardType: .emailAddress, contentType: .emailAddress)
+                                  keyboardType: .emailAddress, contentType: .emailAddress,
+                                  onSubmit: { focusedField = .password })
+                        .focused($focusedField, equals: .email)
                     AuthTextField(title: "Password", systemImage: "lock", text: $password,
-                                  isSecure: true, contentType: .password)
+                                  isSecure: true, contentType: .password, submitLabel: .go,
+                                  onSubmit: {
+                                      focusedField = nil
+                                      if canSubmit { onSignIn() }
+                                  })
+                        .focused($focusedField, equals: .password)
                 }
 
                 if let errorMessage {
