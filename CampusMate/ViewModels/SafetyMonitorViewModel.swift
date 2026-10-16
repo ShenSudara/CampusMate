@@ -8,6 +8,7 @@ final class SafetyMonitorViewModel: ObservableObject {
     struct Prompt: Equatable {
         let reason: String
         let deadline: Date
+        let window: TimeInterval
     }
 
     @Published private(set) var prompt: Prompt?
@@ -42,7 +43,8 @@ final class SafetyMonitorViewModel: ObservableObject {
     }
 
     var progress: Double {
-        Double(secondsLeft) / SafetyThresholds.motionResponseWindow
+        guard let prompt, prompt.window > 0 else { return 0 }
+        return Double(secondsLeft) / prompt.window
     }
 
     // Called whenever the active trip changes; monitoring runs only during a trip.
@@ -77,7 +79,8 @@ final class SafetyMonitorViewModel: ObservableObject {
         guard trip != nil, prompt == nil else { return }
         let reason = "We detected \(event.description)."
         prompt = Prompt(reason: reason,
-                        deadline: Date().addingTimeInterval(SafetyThresholds.motionResponseWindow))
+                        deadline: Date().addingTimeInterval(SafetyThresholds.motionResponseWindow),
+                        window: SafetyThresholds.motionResponseWindow)
         alertSent = false
         errorMessage = nil
         now = Date()

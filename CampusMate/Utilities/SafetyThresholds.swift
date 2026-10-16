@@ -1,28 +1,31 @@
 import Foundation
 
-// Safety timing and sensitivity values, kept together so they are easy to tune.
+// Safety timing and sensitivity values in one place. Most can be changed in
+// Profile → Safety Settings; the defaults live in SafetySettings.defaults.
 enum SafetyThresholds {
-    // How long a student has to tap "I'm Fine" after a guardian's check-in ping.
-    static let checkInResponseWindow: TimeInterval = 5 * 60
+    private static var settings: SafetySettings { SafetySettingsStore.shared.current }
+
+    // How long a student has to tap "I'm Fine" after this user sends a check-in ping.
+    static var checkInResponseWindow: TimeInterval { settings.checkInResponseWindow }
 
     // Motion sensors are sampled this many times per second during a journey.
     static let motionSampleRate: Double = 50
     // A single spike of user acceleration above this (in g) counts as a hard impact, e.g. a fall.
-    static let impactAcceleration: Double = 2.7
+    static var impactAcceleration: Double { settings.impactAcceleration }
     // Acceleration above this (in g) counts as violent shaking...
-    static let shakeAcceleration: Double = 1.6
+    static var shakeAcceleration: Double { settings.shakeAcceleration }
     // ...when it keeps happening for at least this long within the window below.
-    static let shakeDuration: TimeInterval = 1.5
+    static var shakeDuration: TimeInterval { settings.shakeDuration }
     static let shakeWindow: TimeInterval = 3
     // Rotation faster than this (radians per second) counts as violent spinning or tumbling.
-    static let rotationRate: Double = 12
+    static var rotationRate: Double { settings.rotationRate }
     // How long the student has to tap "I'm OK" before guardians are alerted.
-    static let motionResponseWindow: TimeInterval = 30
+    static var motionResponseWindow: TimeInterval { settings.motionResponseWindow }
     // After a detection, ignore new ones for this long so one event can't trigger repeatedly.
-    static let motionCooldown: TimeInterval = 60
+    static var motionCooldown: TimeInterval { settings.motionCooldown }
 
     // How long the SOS button must be held before the alert is sent.
-    static let sosHoldDuration: TimeInterval = 1.5
+    static var sosHoldDuration: TimeInterval { settings.sosHoldDuration }
     // Wait this long before another SOS can be sent, so a repeated press doesn't spam the group.
-    static let sosResendDelay: TimeInterval = 30
+    static var sosResendDelay: TimeInterval { settings.sosResendDelay }
 }

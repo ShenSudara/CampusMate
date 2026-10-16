@@ -30,8 +30,11 @@ final class CheckInViewModel: ObservableObject {
 
     var isExpired: Bool { activePing?.isExpired(at: now) ?? false }
 
+    // Uses the ping's own window, since the guardian who sent it may use a different setting.
     var progress: Double {
-        Double(secondsLeft) / SafetyThresholds.checkInResponseWindow
+        guard let ping = activePing else { return 0 }
+        let window = ping.deadline.timeIntervalSince(ping.sentAt)
+        return window > 0 ? Double(secondsLeft) / window : 0
     }
 
     func start(uid: String) {

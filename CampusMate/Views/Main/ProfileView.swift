@@ -43,6 +43,16 @@ struct ProfileView: View {
                     Text("Guardians are notified about missed check-ins and possible emergencies. Students are notified when a guardian checks on them.")
                 }
 
+                Section {
+                    NavigationLink {
+                        SafetySettingsView()
+                    } label: {
+                        Label("Safety Settings", systemImage: "slider.horizontal.3")
+                    }
+                } footer: {
+                    Text("Adjust check-in time, motion sensitivity and the SOS button. Saved on this device.")
+                }
+
                 if let errorMessage = session.errorMessage {
                     Section {
                         Text(errorMessage).foregroundColor(.red)

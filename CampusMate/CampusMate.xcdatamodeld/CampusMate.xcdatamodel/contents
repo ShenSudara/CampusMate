@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="1" systemVersion="1" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+    <entity name="SafetySettingsEntity" representedClassName="SafetySettingsEntity" syncable="YES" codeGenerationType="class">
+        <attribute name="checkInResponseWindow" attributeType="Double" defaultValueString="300" usesScalarValueType="YES"/>
+        <attribute name="impactAcceleration" attributeType="Double" defaultValueString="2.7" usesScalarValueType="YES"/>
+        <attribute name="motionCooldown" attributeType="Double" defaultValueString="60" usesScalarValueType="YES"/>
+        <attribute name="motionResponseWindow" attributeType="Double" defaultValueString="30" usesScalarValueType="YES"/>
+        <attribute name="rotationRate" attributeType="Double" defaultValueString="12" usesScalarValueType="YES"/>
+        <attribute name="shakeAcceleration" attributeType="Double" defaultValueString="1.6" usesScalarValueType="YES"/>
+        <attribute name="shakeDuration" attributeType="Double" defaultValueString="1.5" usesScalarValueType="YES"/>
+        <attribute name="sosHoldDuration" attributeType="Double" defaultValueString="1.5" usesScalarValueType="YES"/>
+        <attribute name="sosResendDelay" attributeType="Double" defaultValueString="30" usesScalarValueType="YES"/>
+        <attribute name="updatedAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+    </entity>
+</model>
