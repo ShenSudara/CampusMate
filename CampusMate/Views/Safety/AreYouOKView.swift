@@ -94,6 +94,8 @@ struct AreYouOKView: View {
         .padding(24)
         .background(Color(.systemBackground).ignoresSafeArea())
         .interactiveDismissDisabled()
+        // The countdown and buttons must stay on screen, so very large text sizes are capped.
+        .dynamicTypeSize(...DynamicTypeSize.accessibility2)
     }
 }
 
