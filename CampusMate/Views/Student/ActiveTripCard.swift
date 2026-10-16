@@ -28,6 +28,11 @@ struct ActiveTripCard: View {
         }
     }
 
+    private var sharedWithText: String {
+        let count = max(trip.memberIds.count - 1, 0)
+        return count == 1 ? "1 member" : "\(count) members"
+    }
+
     private var details: some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack {
@@ -57,7 +62,7 @@ struct ActiveTripCard: View {
                 }
             }
 
-            Text("Started at \(trip.startedAt.formatted(date: .omitted, time: .shortened)) · shared with \(max(trip.memberIds.count - 1, 0)) member(s)")
+            Text("Started at \(trip.startedAt.formatted(date: .omitted, time: .shortened)) · shared with \(sharedWithText)")
                 .font(.caption)
                 .foregroundColor(.secondary)
 
