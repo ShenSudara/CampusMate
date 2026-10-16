@@ -19,6 +19,7 @@ struct SignInView: View {
                     Image(systemName: "figure.walk.circle.fill")
                         .font(.system(size: 72))
                         .foregroundColor(.accentColor)
+                        .accessibilityHidden(true)
                     Text("CampusMate")
                         .font(.largeTitle.bold())
                     Text("Travel safely. Stay connected.")
@@ -38,6 +39,7 @@ struct SignInView: View {
                         .font(.footnote)
                         .foregroundColor(.red)
                         .multilineTextAlignment(.center)
+                        .accessibilityLabel("Error: \(errorMessage)")
                 }
 
                 Button(action: onSignIn) {
@@ -51,6 +53,7 @@ struct SignInView: View {
                     .frame(maxWidth: .infinity)
                     .padding()
                 }
+                .accessibilityLabel(isLoading ? "Signing in" : "Sign In")
                 .background(canSubmit ? Color.accentColor : Color(.tertiarySystemFill))
                 .foregroundColor(canSubmit ? .white : .secondary)
                 .cornerRadius(12)
