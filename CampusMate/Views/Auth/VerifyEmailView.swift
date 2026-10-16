@@ -18,10 +18,15 @@ struct VerifyEmailView: View {
                     .multilineTextAlignment(.center)
 
                 if let infoMessage = viewModel.infoMessage {
-                    Text(infoMessage)
-                        .font(.footnote)
-                        .foregroundColor(.green)
-                        .multilineTextAlignment(.center)
+                    Label {
+                        Text(infoMessage)
+                            .foregroundColor(.primary)
+                    } icon: {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundColor(.green)
+                    }
+                    .font(.footnote)
+                    .multilineTextAlignment(.center)
                 }
                 if let errorMessage = viewModel.errorMessage {
                     Text(errorMessage)
