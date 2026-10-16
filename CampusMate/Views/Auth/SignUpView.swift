@@ -10,6 +10,9 @@ struct SignUpView: View {
     let onSignUp: () -> Void
     let onShowSignIn: () -> Void
 
+    private enum Field { case name, email, password, confirm }
+    @FocusState private var focusedField: Field?
+
     private var passwordsMatch: Bool { password == confirmPassword }
 
     private var canSubmit: Bool {
@@ -34,14 +37,25 @@ struct SignUpView: View {
 
                 VStack(spacing: 12) {
                     AuthTextField(title: "Full name", systemImage: "person", text: $displayName,
-                                  contentType: .name)
+                                  contentType: .name, onSubmit: { focusedField = .email })
+                        .focused($focusedField, equals: .name)
                     AuthTextField(title: "Email", systemImage: "envelope", text: $email,
-                                  keyboardType: .emailAddress, contentType: .emailAddress)
+                                  keyboardType: .emailAddress, contentType: .emailAddress,
+                                  onSubmit: { focusedField = .password })
+                        .focused($focusedField, equals: .email)
                     AuthTextField(title: "Password (min \(InputValidator.minimumPasswordLength) characters)",
                                   systemImage: "lock", text: $password,
-                                  isSecure: true, contentType: .newPassword)
+                                  isSecure: true, contentType: .newPassword,
+                                  onSubmit: { focusedField = .confirm })
+                        .focused($focusedField, equals: .password)
                     AuthTextField(title: "Confirm password", systemImage: "lock.rotation",
-                                  text: $confirmPassword, isSecure: true, contentType: .newPassword)
+                                  text: $confirmPassword, isSecure: true, contentType: .newPassword,
+                                  submitLabel: .go,
+                                  onSubmit: {
+                                      focusedField = nil
+                                      if canSubmit { onSignUp() }
+                                  })
+                        .focused($focusedField, equals: .confirm)
                 }
 
                 if !confirmPassword.isEmpty && !passwordsMatch {
