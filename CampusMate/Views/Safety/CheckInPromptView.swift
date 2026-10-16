@@ -18,8 +18,10 @@ struct CheckInPromptView: View {
                 Image(systemName: isExpired ? "exclamationmark.triangle.fill" : "hand.wave.fill")
                     .font(.system(size: 52))
                     .foregroundColor(isExpired ? .orange : .accentColor)
+                    .accessibilityHidden(true)
                 Text(isExpired ? "Time's up" : "Are you OK?")
                     .font(.largeTitle.bold())
+                    .accessibilityAddTraits(.isHeader)
                 Text(isExpired
                      ? "\(senderName) will see that you didn't respond in time. Tap I'm Fine to let them know you're safe."
                      : "\(senderName) sent you a check-in. Let them know you're safe.")
@@ -65,6 +67,7 @@ struct CheckInPromptView: View {
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 20)
             }
+            .accessibilityLabel(isResponding ? "Sending reply" : "I'm Fine")
             .background(Color.confirmGreen)
             .foregroundColor(.white)
             .cornerRadius(18)
