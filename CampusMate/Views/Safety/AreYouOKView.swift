@@ -19,7 +19,9 @@ struct AreYouOKView: View {
                 Image(systemName: alertSent ? "checkmark.shield.fill" : "exclamationmark.triangle.fill")
                     .font(.system(size: 52))
                     .foregroundColor(alertSent ? .green : .red)
+                    .accessibilityHidden(true)
                 Text(alertSent ? "Your group has been alerted" : "Are you OK?")
+                    .accessibilityAddTraits(.isHeader)
                     .font(.largeTitle.bold())
                     .multilineTextAlignment(.center)
                 Text(alertSent
