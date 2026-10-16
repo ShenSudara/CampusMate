@@ -26,7 +26,7 @@ struct StudentHomeView: View {
                 }
 
                 if tripViewModel.isLoading {
-                    ProgressView()
+                    ProgressView("Checking for an active journey…")
                         .frame(maxWidth: .infinity)
                 } else if let trip = tripViewModel.activeTrip {
                     sosButton(for: trip)
@@ -42,7 +42,7 @@ struct StudentHomeView: View {
                 }
 
                 if let errorMessage = tripViewModel.errorMessage {
-                    Text(errorMessage)
+                    Label(errorMessage, systemImage: "exclamationmark.triangle.fill")
                         .font(.footnote)
                         .foregroundColor(.red)
                 }
