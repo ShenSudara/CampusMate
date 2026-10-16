@@ -65,7 +65,7 @@ struct CheckInPromptView: View {
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 20)
             }
-            .background(Color.green)
+            .background(Color.confirmGreen)
             .foregroundColor(.white)
             .cornerRadius(18)
             .disabled(isResponding)
