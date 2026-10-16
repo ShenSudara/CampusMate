@@ -7,6 +7,8 @@ struct AuthTextField: View {
     var isSecure = false
     var keyboardType: UIKeyboardType = .default
     var contentType: UITextContentType?
+    var submitLabel: SubmitLabel = .next
+    var onSubmit: () -> Void = {}
 
     var body: some View {
         HStack(spacing: 12) {
@@ -25,6 +27,8 @@ struct AuthTextField: View {
                 }
             }
             .textContentType(contentType)
+            .submitLabel(submitLabel)
+            .onSubmit(onSubmit)
         }
         .padding()
         .background(Color(.secondarySystemBackground))
