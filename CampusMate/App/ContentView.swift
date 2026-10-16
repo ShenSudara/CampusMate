@@ -13,7 +13,7 @@ struct ContentView: View {
     var body: some View {
         Group {
             if !authViewModel.hasCheckedSession {
-                ProgressView()
+                ProgressView("Loading…")
             } else if authViewModel.isSignedIn && !authViewModel.isEmailVerified {
                 VerifyEmailView(viewModel: authViewModel, email: authViewModel.signedInEmail)
             } else if authViewModel.isSignedIn {
