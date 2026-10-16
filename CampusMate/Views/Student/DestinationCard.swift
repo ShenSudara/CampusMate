@@ -10,11 +10,14 @@ struct DestinationCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             RouteMapPreview(destination: destination, userCoordinate: userCoordinate)
+                .accessibilityElement()
+                .accessibilityLabel("Map showing your location and \(destination.name)")
 
             HStack(alignment: .top, spacing: 12) {
                 Image(systemName: "flag.checkered")
                     .font(.title3)
                     .foregroundColor(.accentColor)
+                    .accessibilityHidden(true)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(destination.name)
                         .font(.headline)
