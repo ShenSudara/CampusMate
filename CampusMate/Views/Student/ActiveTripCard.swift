@@ -14,6 +14,8 @@ struct ActiveTripCard: View {
         VStack(alignment: .leading, spacing: 0) {
             RouteMapPreview(destination: trip.destination,
                             userCoordinate: userCoordinate ?? trip.lastCoordinate)
+                .accessibilityElement()
+                .accessibilityLabel("Map showing your location and \(trip.destination.name)")
             details
         }
         .background(Color(.secondarySystemGroupedBackground))
@@ -43,6 +45,7 @@ struct ActiveTripCard: View {
             HStack(alignment: .top, spacing: 12) {
                 Image(systemName: "flag.checkered")
                     .foregroundColor(.accentColor)
+                    .accessibilityHidden(true)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(trip.destination.name)
                         .font(.subheadline.bold())
