@@ -42,7 +42,7 @@ struct GuardianHomeView: View {
                                   onSelect: viewModel.select)
 
                 if let errorMessage = viewModel.errorMessage {
-                    Text(errorMessage)
+                    Label(errorMessage, systemImage: "exclamationmark.triangle.fill")
                         .font(.footnote)
                         .foregroundColor(.red)
                         .padding(10)
