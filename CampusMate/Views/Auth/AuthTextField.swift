@@ -13,6 +13,7 @@ struct AuthTextField: View {
             Image(systemName: systemImage)
                 .foregroundColor(.secondary)
                 .frame(width: 20)
+                .accessibilityHidden(true)
             Group {
                 if isSecure {
                     SecureField(title, text: $text)
