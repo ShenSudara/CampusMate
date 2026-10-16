@@ -68,8 +68,8 @@ struct SignUpView: View {
                     .frame(maxWidth: .infinity)
                     .padding()
                 }
-                .background(canSubmit ? Color.accentColor : Color.gray.opacity(0.4))
-                .foregroundColor(.white)
+                .background(canSubmit ? Color.accentColor : Color(.tertiarySystemFill))
+                .foregroundColor(canSubmit ? .white : .secondary)
                 .cornerRadius(12)
                 .disabled(!canSubmit)
 
