@@ -28,8 +28,10 @@ struct TripStatusCard: View {
                 } icon: {
                     Image(systemName: "flag.checkered").foregroundColor(.red)
                 }
+                .accessibilityLabel("Heading to \(trip.destination.name)")
                 HStack(spacing: 16) {
                     Label(trip.startedAt.formatted(date: .omitted, time: .shortened), systemImage: "clock")
+                        .accessibilityLabel("Started at \(trip.startedAt.formatted(date: .omitted, time: .shortened))")
                     // GPS reports small speeds while standing still, so show those as stopped.
                     if let speed = trip.lastSpeed {
                         if speed < 0.5 {
