@@ -54,7 +54,7 @@ struct TripDetailView: View {
                 if let duration = trip.duration {
                     LabeledContent("Duration", value: Formatters.duration(duration))
                 }
-                LabeledContent("Distance", value: viewModel.path.count > 1 ? Formatters.distance(viewModel.distance) : "-")
+                LabeledContent("Distance", value: viewModel.path.count > 1 ? Formatters.distance(viewModel.distance) : "Not recorded")
                 LabeledContent("Location updates", value: "\(viewModel.path.count)")
                 LabeledContent("Shared with", value: sharedWithText)
             }
