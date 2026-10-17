@@ -78,7 +78,12 @@ struct GroupDetailView: View {
             }
         }
         .overlay {
-            if viewModel.isWorking { ProgressView() }
+            if viewModel.isWorking {
+                ProgressView("Saving…")
+                    .padding()
+                    .background(.regularMaterial)
+                    .cornerRadius(12)
+            }
         }
         .sheet(isPresented: $isAddingMember) {
             AddMemberView(viewModel: viewModel, group: group)
