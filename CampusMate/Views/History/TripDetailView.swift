@@ -22,8 +22,10 @@ struct TripDetailView: View {
                         path: viewModel.path.map(\.coordinate),
                         focusKey: "\(trip.id ?? "")-\(viewModel.path.count)"
                     )
+                    .accessibilityElement()
+                    .accessibilityLabel("Map of the route to \(trip.destination.name)")
                     if viewModel.isLoading {
-                        ProgressView()
+                        ProgressView("Loading route…")
                             .padding()
                             .background(.regularMaterial)
                             .cornerRadius(12)
