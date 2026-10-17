@@ -119,6 +119,7 @@ struct TripHistoryRow: View {
             Image(systemName: showsStudent ? "person.crop.circle.fill" : "flag.checkered.circle.fill")
                 .font(.title2)
                 .foregroundColor(.accentColor)
+                .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 2) {
                 if showsStudent {
                     Text(trip.studentName)
