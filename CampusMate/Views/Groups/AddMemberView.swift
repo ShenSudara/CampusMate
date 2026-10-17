@@ -15,6 +15,8 @@ struct AddMemberView: View {
                         .textContentType(.emailAddress)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
+                        .submitLabel(.done)
+                        .onSubmit(add)
                 } footer: {
                     Text("The person must already have a CampusMate account. Their role in \(group.name) follows the mode they choose in their profile.")
                 }
@@ -34,18 +36,21 @@ struct AddMemberView: View {
                     if viewModel.isWorking {
                         ProgressView()
                     } else {
-                        Button("Add") {
-                            Task {
-                                if await viewModel.addMember(email: email, to: group) {
-                                    dismiss()
-                                }
-                            }
-                        }
+                        Button("Add", action: add)
                         .disabled(!InputValidator.isValidEmail(email))
                     }
                 }
             }
             .onAppear { viewModel.errorMessage = nil }
+        }
+    }
+
+    private func add() {
+        guard !viewModel.isWorking, InputValidator.isValidEmail(email) else { return }
+        Task {
+            if await viewModel.addMember(email: email, to: group) {
+                dismiss()
+            }
         }
     }
 }
