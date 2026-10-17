@@ -11,6 +11,8 @@ struct CreateGroupView: View {
             Form {
                 Section {
                     TextField("Group name (e.g. Family)", text: $name)
+                        .submitLabel(.done)
+                        .onSubmit(create)
                 } footer: {
                     Text("You will be the admin of this group. Members in Student mode share their journeys with the group, and members in Guardian mode watch them.")
                 }
@@ -30,18 +32,21 @@ struct CreateGroupView: View {
                     if viewModel.isWorking {
                         ProgressView()
                     } else {
-                        Button("Create") {
-                            Task {
-                                if await viewModel.createGroup(name: name, creator: creator) {
-                                    dismiss()
-                                }
-                            }
-                        }
+                        Button("Create", action: create)
                         .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty)
                     }
                 }
             }
             .onAppear { viewModel.errorMessage = nil }
+        }
+    }
+
+    private func create() {
+        guard !viewModel.isWorking, !name.trimmingCharacters(in: .whitespaces).isEmpty else { return }
+        Task {
+            if await viewModel.createGroup(name: name, creator: creator) {
+                dismiss()
+            }
         }
     }
 }
