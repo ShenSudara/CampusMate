@@ -35,6 +35,8 @@ struct GuardianHomeView: View {
                 focusKey: (viewModel.selectedStudentId ?? "") + (trip?.id ?? "")
             )
             .ignoresSafeArea(edges: .top)
+            .accessibilityElement()
+            .accessibilityLabel(mapAccessibilityLabel(trip: trip, isStale: stale))
 
             VStack(spacing: 8) {
                 StudentPickerView(students: viewModel.students,
@@ -71,6 +73,13 @@ struct GuardianHomeView: View {
                 }
             }
         }
+    }
+
+    private func mapAccessibilityLabel(trip: Trip?, isStale: Bool) -> String {
+        guard let name = viewModel.selectedStudent?.displayName else { return "Map" }
+        guard let trip else { return "Map. \(name) is not on a journey." }
+        let status = isStale ? "Location signal lost." : "Live location shown."
+        return "Map of \(name)'s journey to \(trip.destination.name). \(status)"
     }
 }
 
