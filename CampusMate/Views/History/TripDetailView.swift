@@ -5,6 +5,11 @@ struct TripDetailView: View {
 
     private var trip: Trip { viewModel.trip }
 
+    private var sharedWithText: String {
+        let count = max(trip.memberIds.count - 1, 0)
+        return count == 1 ? "1 member" : "\(count) members"
+    }
+
     var body: some View {
         List {
             Section {
@@ -51,7 +56,7 @@ struct TripDetailView: View {
                 }
                 LabeledContent("Distance", value: viewModel.path.count > 1 ? Formatters.distance(viewModel.distance) : "-")
                 LabeledContent("Location updates", value: "\(viewModel.path.count)")
-                LabeledContent("Shared with", value: "\(max(trip.memberIds.count - 1, 0)) member(s)")
+                LabeledContent("Shared with", value: sharedWithText)
             }
 
             if let errorMessage = viewModel.errorMessage {
