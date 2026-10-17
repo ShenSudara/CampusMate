@@ -19,6 +19,7 @@ struct TripStatusCard: View {
                 Spacer()
                 statusBadge
             }
+            .accessibilityElement(children: .combine)
 
             if let trip = student.activeTrip {
                 Divider()
