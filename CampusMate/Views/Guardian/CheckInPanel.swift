@@ -31,6 +31,8 @@ struct CheckInPanel: View {
             }
             .buttonStyle(.borderedProminent)
             .disabled(!canSend)
+            .accessibilityLabel(isSending ? "Sending check-in" : "Send Check-in")
+            .accessibilityHint("Asks \(studentName) to confirm they're safe")
         }
         .padding()
         .background(.regularMaterial)
