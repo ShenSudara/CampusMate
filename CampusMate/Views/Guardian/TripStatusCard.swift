@@ -30,8 +30,13 @@ struct TripStatusCard: View {
                 }
                 HStack(spacing: 16) {
                     Label(trip.startedAt.formatted(date: .omitted, time: .shortened), systemImage: "clock")
+                    // GPS reports small speeds while standing still, so show those as stopped.
                     if let speed = trip.lastSpeed {
-                        Label(String(format: "%.0f km/h", speed * 3.6), systemImage: "speedometer")
+                        if speed < 0.5 {
+                            Label("Stopped", systemImage: "pause.circle")
+                        } else {
+                            Label(String(format: "%.0f km/h", speed * 3.6), systemImage: "speedometer")
+                        }
                     }
                 }
                 .font(.caption)
