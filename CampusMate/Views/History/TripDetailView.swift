@@ -63,7 +63,10 @@ struct TripDetailView: View {
 
             if let errorMessage = viewModel.errorMessage {
                 Section {
-                    Text(errorMessage).foregroundColor(.red)
+                    Label(errorMessage, systemImage: "exclamationmark.triangle.fill")
+                        .foregroundColor(.red)
+                    Button("Try Again") { Task { await viewModel.load() } }
+                        .disabled(viewModel.isLoading)
                 }
             }
         }
