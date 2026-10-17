@@ -10,6 +10,12 @@ struct GroupListView: View {
             Group {
                 if viewModel.isLoading {
                     ProgressView("Loading groups…")
+                } else if let errorMessage = viewModel.errorMessage, viewModel.groups.isEmpty {
+                    EmptyStateView(
+                        systemImage: "exclamationmark.triangle",
+                        title: "Couldn't load groups",
+                        message: errorMessage
+                    )
                 } else if viewModel.groups.isEmpty {
                     EmptyStateView(
                         systemImage: "person.3",
