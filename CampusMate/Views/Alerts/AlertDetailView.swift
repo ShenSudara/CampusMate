@@ -20,6 +20,8 @@ struct AlertDetailView: View {
                     }
                     .frame(height: 240)
                     .listRowInsets(EdgeInsets())
+                    .accessibilityElement()
+                    .accessibilityLabel("Map showing where \(alert.studentName) was when this alert was raised")
 
                     Button {
                         let item = MKMapItem(placemark: MKPlacemark(coordinate: coordinate))
@@ -28,6 +30,7 @@ struct AlertDetailView: View {
                     } label: {
                         Label("Open in Maps", systemImage: "map")
                     }
+                    .accessibilityHint("Shows this location in the Maps app for directions")
                 }
             } else {
                 Section {
