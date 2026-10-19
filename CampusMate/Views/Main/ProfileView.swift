@@ -56,7 +56,8 @@ struct ProfileView: View {
 
                 if let errorMessage = session.errorMessage {
                     Section {
-                        Text(errorMessage).foregroundColor(.red)
+                        Label(errorMessage, systemImage: "exclamationmark.triangle.fill")
+                            .foregroundColor(.red)
                     }
                 }
 
