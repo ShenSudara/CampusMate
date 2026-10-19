@@ -49,7 +49,6 @@ final class GuardianViewModel: ObservableObject {
 
     var selectedTrip: Trip? { selectedStudent?.activeTrip }
 
-    var travellingCount: Int { students.filter(\.isTravelling).count }
 
     func start(uid: String, savedSelection: String?) {
         guard groupListener == nil else { return }

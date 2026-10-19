@@ -21,8 +21,6 @@ final class LiveLocationService {
         self.tripService = tripService
     }
 
-    var isSharing: Bool { tripId != nil }
-
     // Safe to call again, e.g. after location permission is granted.
     func startSharing(tripId: String) {
         if self.tripId == tripId {
