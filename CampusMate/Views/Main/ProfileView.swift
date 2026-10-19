@@ -78,6 +78,7 @@ struct ProfileView: View {
                 TextField("Full name", text: $editedName)
                 Button("Cancel", role: .cancel) {}
                 Button("Save") { Task { await session.updateDisplayName(editedName) } }
+                    .disabled(editedName.trimmingCharacters(in: .whitespaces).isEmpty)
             }
         }
     }
