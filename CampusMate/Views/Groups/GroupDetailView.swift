@@ -170,6 +170,7 @@ private struct GroupAdminCard: View {
                 .frame(width: 44, height: 44)
                 .background(Color.orange.opacity(0.15))
                 .clipShape(Circle())
+                .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 2) {
                 Text("Group Admin")
                     .font(.caption)
