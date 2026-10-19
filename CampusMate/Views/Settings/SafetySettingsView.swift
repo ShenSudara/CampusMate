@@ -9,7 +9,7 @@ struct SafetySettingsView: View {
             Section {
                 stepper("Reply time", value: $viewModel.draft.checkInResponseWindow,
                         range: SafetySettings.checkInResponseRange, step: 60,
-                        text: Formatters.countdown(Int(viewModel.draft.checkInResponseWindow)) + " min")
+                        text: "\(Int(viewModel.draft.checkInResponseWindow / 60)) min")
             } header: {
                 Text("Check-ins I Send")
             } footer: {
