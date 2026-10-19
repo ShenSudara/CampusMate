@@ -12,6 +12,7 @@ struct AlertRowView: View {
                 .frame(width: 40, height: 40)
                 .background(alert.type.isCritical ? Color.red : Color.orange)
                 .clipShape(Circle())
+                .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 3) {
                 HStack {
                     Text(alert.type.title)
