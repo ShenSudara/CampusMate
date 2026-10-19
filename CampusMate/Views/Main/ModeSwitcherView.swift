@@ -17,6 +17,7 @@ struct ModeSwitcherView: View {
 
             if isSaving {
                 ProgressView()
+                    .accessibilityLabel("Saving mode")
             }
         }
     }
