@@ -36,10 +36,6 @@ final class UserService {
         }
     }
 
-    func fetchUser(uid: String) async throws -> AppUser {
-        try await users.document(uid).getDocument(as: AppUser.self)
-    }
-
     func findUser(byEmail email: String) async throws -> AppUser? {
         let snapshot = try await users
             .whereField("email", isEqualTo: email.lowercased())
