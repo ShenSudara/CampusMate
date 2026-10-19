@@ -6,6 +6,7 @@ struct ProfileView: View {
     @ObservedObject var alertsViewModel: AlertsViewModel
     @State private var editedName = ""
     @State private var isEditingName = false
+    @State private var confirmSignOut = false
 
     var body: some View {
         NavigationStack {
@@ -60,14 +61,19 @@ struct ProfileView: View {
                 }
 
                 Section {
-                    Button("Sign Out", role: .destructive) {
-                        session.stop()
-                        authViewModel.signOut()
-                    }
+                    Button("Sign Out", role: .destructive) { confirmSignOut = true }
                 }
             }
             .navigationTitle("Profile")
             .task { await alertsViewModel.refreshNotificationStatus() }
+            .confirmationDialog("Sign out of CampusMate?", isPresented: $confirmSignOut, titleVisibility: .visible) {
+                Button("Sign Out", role: .destructive) {
+                    session.stop()
+                    authViewModel.signOut()
+                }
+            } message: {
+                Text("Location sharing and safety alerts stop on this phone until you sign in again.")
+            }
             .alert("Edit Name", isPresented: $isEditingName) {
                 TextField("Full name", text: $editedName)
                 Button("Cancel", role: .cancel) {}
