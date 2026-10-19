@@ -14,6 +14,7 @@ struct ModeSwitcherView: View {
             }
             .pickerStyle(.segmented)
             .disabled(isSaving)
+            .accessibilityHint("Students share their journeys. Guardians watch students' journeys.")
 
             if isSaving {
                 ProgressView()
