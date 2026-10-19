@@ -141,6 +141,7 @@ struct GroupDetailView: View {
                 .font(.title3)
                 .foregroundColor(.accentColor)
                 .frame(width: 28)
+                .accessibilityLabel("\(mode.title) mode")
             VStack(alignment: .leading, spacing: 2) {
                 Text(member?.displayName ?? "Unknown")
                     + Text(uid == viewModel.currentUserId ? " (You)" : "").foregroundColor(.secondary)
