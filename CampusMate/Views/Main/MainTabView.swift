@@ -121,6 +121,8 @@ struct MainTabView: View {
             )
         }
         .onDisappear {
+            groupsViewModel.stop()
+            sosViewModel.reset()
             tripViewModel.stop()
             guardianViewModel.stop()
             historyViewModel.stop()
