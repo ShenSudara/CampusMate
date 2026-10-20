@@ -1,0 +1,122 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function isSelf(uid) { return signedIn() && request.auth.uid == uid; }
+
+    // ---------- Users ----------
+    match /users/{uid} {
+      // Any signed-in user can read profiles, so members can be invited by email.
+      allow read: if signedIn();
+      allow create: if isSelf(uid)
+        && request.resource.data.email == request.auth.token.email.lower();
+      // Users edit only their own profile and cannot change their email.
+      allow update: if isSelf(uid)
+        && request.resource.data.email == resource.data.email;
+      allow delete: if false;
+    }
+
+    // ---------- Trusted groups ----------
+    match /groups/{groupId} {
+      function isMember() { return signedIn() && request.auth.uid in resource.data.memberIds; }
+      function isAdmin() { return signedIn() && request.auth.uid == resource.data.adminId; }
+
+      // The admin can never be changed or removed.
+      function keepsAdmin() {
+        return request.resource.data.adminId == resource.data.adminId
+          && request.resource.data.adminId in request.resource.data.memberIds;
+      }
+
+      // A non-admin member may only remove themselves.
+      function isLeaving() {
+        return isMember()
+          && !(request.auth.uid in request.resource.data.memberIds)
+          && request.resource.data.memberIds.size() == resource.data.memberIds.size() - 1
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['memberIds', 'members']);
+      }
+
+      // A member may change only their own name, email and mode entry.
+      function isUpdatingOwnEntry() {
+        return isMember()
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['members'])
+          && request.resource.data.members.diff(resource.data.members).affectedKeys().hasOnly([request.auth.uid]);
+      }
+
+      allow read: if isMember();
+      allow create: if signedIn()
+        && request.resource.data.adminId == request.auth.uid
+        && request.resource.data.memberIds == [request.auth.uid];
+      allow update: if (isAdmin() && keepsAdmin()) || isLeaving() || isUpdatingOwnEntry();
+      allow delete: if isAdmin();
+    }
+
+    // ---------- Trips ----------
+    match /trips/{tripId} {
+      function isTripStudent() { return signedIn() && request.auth.uid == resource.data.studentId; }
+
+      allow read: if signedIn()
+        && (request.auth.uid in resource.data.memberIds || request.auth.uid == resource.data.studentId);
+      allow create: if signedIn()
+        && request.resource.data.studentId == request.auth.uid
+        && request.auth.uid in request.resource.data.memberIds
+        && request.resource.data.status == 'active';
+      // Live location, ending the journey and "arrived safely".
+      allow update: if isTripStudent()
+        && request.resource.data.studentId == resource.data.studentId;
+      // Students may delete only their own finished journeys.
+      allow delete: if isTripStudent() && resource.data.status == 'completed';
+
+      // Breadcrumb trail of the journey.
+      match /locations/{pointId} {
+        function trip() { return get(/databases/$(database)/documents/trips/$(tripId)).data; }
+
+        allow read: if signedIn()
+          && (request.auth.uid in trip().memberIds || request.auth.uid == trip().studentId);
+        allow create: if signedIn()
+          && request.auth.uid == trip().studentId
+          && trip().status == 'active';
+        allow delete: if signedIn()
+          && request.auth.uid == trip().studentId
+          && trip().status == 'completed';
+        allow update: if false;
+      }
+    }
+
+    // ---------- Check-in pings ----------
+    match /pings/{pingId} {
+      allow read: if signedIn()
+        && (request.auth.uid in resource.data.memberIds || request.auth.uid == resource.data.studentId);
+      // A group member (not the student) sends a ping.
+      allow create: if signedIn()
+        && request.resource.data.senderId == request.auth.uid
+        && request.auth.uid in request.resource.data.memberIds
+        && request.resource.data.studentId != request.auth.uid
+        && request.resource.data.status == 'pending';
+      allow update: if signedIn() && (
+        // The student answers "I'm Fine".
+        (request.auth.uid == resource.data.studentId
+          && request.resource.data.status == 'acknowledged'
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'respondedAt']))
+        ||
+        // A guardian marks an unanswered ping as missed after its deadline.
+        (request.auth.uid in resource.data.memberIds
+          && request.auth.uid != resource.data.studentId
+          && resource.data.status == 'pending'
+          && request.time > resource.data.deadline
+          && request.resource.data.status == 'missed'
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']))
+      );
+      allow delete: if false;
+    }
+
+    // ---------- Safety alerts (missed check-in, possible emergency, SOS) ----------
+    match /alerts/{alertId} {
+      allow read: if signedIn() && request.auth.uid in resource.data.memberIds;
+      allow create: if signedIn()
+        && request.resource.data.createdBy == request.auth.uid
+        && request.auth.uid in request.resource.data.memberIds;
+      allow update, delete: if false;
+    }
+  }
+}
