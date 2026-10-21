@@ -59,6 +59,8 @@ struct ActiveTripCard: View {
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }
+                    DestinationWeatherView(destination: trip.destination)
+                        .padding(.top, 2)
                 }
             }
 

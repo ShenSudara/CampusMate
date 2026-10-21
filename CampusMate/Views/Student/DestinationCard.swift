@@ -26,6 +26,8 @@ struct DestinationCard: View {
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }
+                    DestinationWeatherView(destination: destination)
+                        .padding(.top, 2)
                 }
                 Spacer()
                 Menu {
