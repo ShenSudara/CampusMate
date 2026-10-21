@@ -291,6 +291,8 @@ struct DestinationMapView: View {
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
+                DestinationWeatherView(destination: destination)
+                    .padding(.top, 2)
             }
             Spacer()
             if removable {
