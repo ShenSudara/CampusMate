@@ -29,6 +29,7 @@ struct TripStatusCard: View {
                     Image(systemName: "flag.checkered").foregroundColor(.red)
                 }
                 .accessibilityLabel("Heading to \(trip.destination.name)")
+                DestinationWeatherView(destination: trip.destination)
                 HStack(spacing: 16) {
                     Label(trip.startedAt.formatted(date: .omitted, time: .shortened), systemImage: "clock")
                         .accessibilityLabel("Started at \(trip.startedAt.formatted(date: .omitted, time: .shortened))")
