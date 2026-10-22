@@ -123,7 +123,36 @@ struct MainTabView: View {
                 onDismiss: checkInViewModel.dismissExpired
             )
         }
+        // Shown over the tabs; check-in and "Are you OK?" prompts still appear on top of it.
+        .overlay {
+            if appLock.isLocked {
+                LockScreenView(
+                    biometryName: appLock.biometry.name,
+                    systemImage: appLock.biometry.systemImage,
+                    isAuthenticating: appLock.isAuthenticating,
+                    errorMessage: appLock.errorMessage,
+                    onUnlock: { Task { await appLock.unlock() } },
+                    onSignOut: {
+                        appLock.reset()
+                        session.stop()
+                        authViewModel.signOut()
+                    }
+                )
+                .transition(.opacity)
+            }
+        }
+        .onChange(of: scenePhase) { phase in
+            switch phase {
+            case .background:
+                appLock.lockIfNeeded(hasActiveJourney: tripViewModel.activeTrip != nil)
+            case .active:
+                Task { await appLock.unlock() }
+            default:
+                break
+            }
+        }
         .onDisappear {
+            appLock.reset()
             groupsViewModel.stop()
             sosViewModel.reset()
             tripViewModel.stop()
@@ -135,6 +164,9 @@ struct MainTabView: View {
             studentHomeViewModel.stopFollowingLocation()
         }
         .task {
+            if appLock.isLocked {
+                Task { await appLock.unlock() }
+            }
             await session.start()
             if let uid = session.userId {
                 groupsViewModel.start(uid: uid)
