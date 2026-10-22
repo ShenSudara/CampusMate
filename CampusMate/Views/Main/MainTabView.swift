@@ -16,6 +16,8 @@ struct MainTabView: View {
     @StateObject private var alertsViewModel = AlertsViewModel()
     @StateObject private var safetyMonitor = SafetyMonitorViewModel()
     @StateObject private var sosViewModel = SOSViewModel()
+    @StateObject private var appLock = AppLockViewModel()
+    @Environment(\.scenePhase) private var scenePhase
     @State private var selectedTab: Tab = .home
 
     var body: some View {
@@ -72,7 +74,8 @@ struct MainTabView: View {
                     GroupListView(viewModel: groupsViewModel, session: session)
                         .tabItem { Label("Groups", systemImage: "person.3") }
                         .tag(Tab.groups)
-                    ProfileView(session: session, authViewModel: authViewModel, alertsViewModel: alertsViewModel)
+                    ProfileView(session: session, authViewModel: authViewModel, alertsViewModel: alertsViewModel,
+                                appLock: appLock)
                         .tabItem { Label("Profile", systemImage: "person.crop.circle") }
                         .tag(Tab.profile)
                 }

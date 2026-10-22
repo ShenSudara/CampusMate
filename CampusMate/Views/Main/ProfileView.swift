@@ -4,6 +4,7 @@ struct ProfileView: View {
     @ObservedObject var session: SessionViewModel
     @ObservedObject var authViewModel: AuthViewModel
     @ObservedObject var alertsViewModel: AlertsViewModel
+    @ObservedObject var appLock: AppLockViewModel
     @State private var editedName = ""
     @State private var isEditingName = false
     @State private var confirmSignOut = false
@@ -45,6 +46,24 @@ struct ProfileView: View {
                 }
 
                 Section {
+                    Toggle(isOn: Binding(get: { appLock.isEnabled },
+                                         set: { value in Task { await appLock.setEnabled(value) } })) {
+                        Label("Unlock with \(appLock.isAvailable ? appLock.biometry.name : "Touch ID")",
+                              systemImage: appLock.isAvailable ? appLock.biometry.systemImage : "touchid")
+                    }
+                    .disabled(appLock.isAuthenticating)
+                    if let message = appLock.errorMessage {
+                        Text(message)
+                            .font(.footnote)
+                            .foregroundColor(.red)
+                    }
+                } header: {
+                    Text("Security")
+                } footer: {
+                    Text("Asks for your fingerprint when you open CampusMate. The app stays unlocked during a journey so SOS is always ready.")
+                }
+
+                Section {
                     NavigationLink {
                         SafetySettingsView()
                     } label: {
@@ -69,6 +88,7 @@ struct ProfileView: View {
             .task { await alertsViewModel.refreshNotificationStatus() }
             .confirmationDialog("Sign out of CampusMate?", isPresented: $confirmSignOut, titleVisibility: .visible) {
                 Button("Sign Out", role: .destructive) {
+                    appLock.reset()
                     session.stop()
                     authViewModel.signOut()
                 }
@@ -112,5 +132,6 @@ struct ProfileView: View {
 }
 
 #Preview {
-    ProfileView(session: SessionViewModel(), authViewModel: AuthViewModel(), alertsViewModel: AlertsViewModel())
+    ProfileView(session: SessionViewModel(), authViewModel: AuthViewModel(), alertsViewModel: AlertsViewModel(),
+                appLock: AppLockViewModel())
 }
